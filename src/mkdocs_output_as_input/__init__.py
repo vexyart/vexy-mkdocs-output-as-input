@@ -4,7 +4,7 @@
 from mkdocs_output_as_input.plugin import OutputAsInputPlugin
 
 try:
-    from mkdocs_output_as_input._version import __version__
+    from mkdocs_output_as_input._version import __version__  # type: ignore[import-untyped]
 except ImportError:
     __version__ = "0.0.0+unknown"
 

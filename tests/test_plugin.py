@@ -58,7 +58,7 @@ class TestOutputAsInputPlugin:
         assert plugin.site_dir == Path(mkdocs_config["site_dir"])
         assert plugin.docs_dir == Path(mkdocs_config["docs_dir"])
 
-    def test_on_page_read_source_captures_content(self, plugin, mkdocs_config, temp_dir):
+    def test_on_page_read_source_captures_content(self, plugin, mkdocs_config, temp_dir):  # noqa: ARG002
         """Test capturing source content and frontmatter."""
         # Create a source file
         docs_dir = Path(mkdocs_config["docs_dir"])
@@ -90,7 +90,7 @@ This is test content.
         assert plugin.source_files["test.md"]["frontmatter"]["title"] == "Test Page"
         assert plugin.source_files["test.md"]["frontmatter"]["category"] == "Testing"
 
-    def test_on_page_read_source_no_frontmatter(self, plugin, mkdocs_config, temp_dir):
+    def test_on_page_read_source_no_frontmatter(self, plugin, mkdocs_config, temp_dir):  # noqa: ARG002
         """Test capturing content without frontmatter."""
         # Create a source file without frontmatter
         docs_dir = Path(mkdocs_config["docs_dir"])
@@ -112,7 +112,7 @@ This is test content.
         assert "no_fm.md" in plugin.source_files
         assert plugin.source_files["no_fm.md"]["frontmatter"] == {}
 
-    def test_on_post_build_creates_cousin_files(self, plugin, mkdocs_config, temp_dir):
+    def test_on_post_build_creates_cousin_files(self, plugin, mkdocs_config, temp_dir):  # noqa: ARG002
         """Test creating cousin files after build."""
         # Setup directories
         docs_dir = Path(mkdocs_config["docs_dir"])
@@ -249,7 +249,7 @@ title: Test Page
         assert '<section class="content">' in content
         assert "<h1>Test</h1>" in content
 
-    def test_invalid_yaml_frontmatter(self, plugin, mkdocs_config, temp_dir):
+    def test_invalid_yaml_frontmatter(self, plugin, mkdocs_config, temp_dir):  # noqa: ARG002
         """Test handling invalid YAML frontmatter."""
         # Create source with invalid YAML
         docs_dir = Path(mkdocs_config["docs_dir"])

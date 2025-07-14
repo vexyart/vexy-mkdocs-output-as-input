@@ -3,7 +3,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 import yaml
 from bs4 import BeautifulSoup
@@ -14,14 +14,14 @@ from mkdocs.structure.pages import Page
 logger = logging.getLogger(__name__)
 
 
-class OutputAsInputPlugin(BasePlugin):
+class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
     """MkDocs plugin that captures HTML output and creates cousin Markdown files.
 
     This plugin:
     1. Lets the entire MkDocs build process run normally
     2. Tracks all source Markdown files and their YAML frontmatter
     3. After the build, creates a "stage" directory that replicates the source structure
-    4. For each source Markdown file, creates a cousin file with original frontmatter 
+    4. For each source Markdown file, creates a cousin file with original frontmatter
        and extracted HTML
     """
 
@@ -32,14 +32,14 @@ class OutputAsInputPlugin(BasePlugin):
         ("verbose", config_options.Type(bool, default=False)),
     )
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the plugin."""
         super().__init__()
-        self.source_files = {}
-        self.site_dir = None
-        self.docs_dir = None
+        self.source_files: Dict[str, Dict[str, Any]] = {}
+        self.site_dir: Optional[Path] = None
+        self.docs_dir: Optional[Path] = None
 
-    def on_config(self, config: dict[str, Any]) -> dict[str, Any]:
+    def on_config(self, config: dict[str, Any]) -> dict[str, Any]:  # type: ignore[override]
         """Store site and docs directories."""
         self.site_dir = Path(config["site_dir"])
         self.docs_dir = Path(config["docs_dir"])
@@ -49,20 +49,20 @@ class OutputAsInputPlugin(BasePlugin):
 
         return config
 
-    def on_page_read_source(self, page: Page, config: dict[str, Any]) -> Optional[str]:  # noqa: ARG002
+    def on_page_read_source(self, page: Page, config: dict[str, Any]) -> Optional[str]:  # type: ignore[override]  # noqa: ARG002
         """Capture source Markdown content and frontmatter."""
         src_path = page.file.src_path
 
         # Read the full source content
         try:
-            with open(page.file.abs_src_path, encoding="utf-8") as f:
+            with open(page.file.abs_src_path, encoding="utf-8") as f:  # type: ignore[arg-type]
                 content = f.read()
         except Exception as e:
             logger.error(f"OutputAsInput: Failed to read {src_path}: {e}")
             return None
 
         # Extract frontmatter if present
-        frontmatter = {}
+        frontmatter: Dict[str, Any] = {}
         if content.startswith("---\n"):
             try:
                 end_idx = content.find("\n---\n", 4)
@@ -82,8 +82,11 @@ class OutputAsInputPlugin(BasePlugin):
 
         return None  # Let MkDocs continue with original content
 
-    def on_post_build(self, config: dict[str, Any]) -> None:  # noqa: ARG002
+    def on_post_build(self, config: dict[str, Any]) -> None:  # type: ignore[override]  # noqa: ARG002
         """After build, process all HTML files and create cousin Markdowns."""
+        if self.docs_dir is None:
+            logger.error("OutputAsInput: docs_dir not set")
+            return
         stage_dir = self.docs_dir.parent / self.config["stage_dir"]
 
         # Create stage directory
@@ -103,6 +106,10 @@ class OutputAsInputPlugin(BasePlugin):
 
     def _process_file(self, src_path: str, file_info: dict[str, Any], stage_dir: Path) -> None:
         """Process a single file: extract HTML and create cousin Markdown."""
+        if self.site_dir is None:
+            logger.error("OutputAsInput: site_dir not set")
+            return
+        
         # Determine HTML output path
         html_path = src_path.replace(".md", "/index.html")
         full_html_path = self.site_dir / html_path
@@ -136,7 +143,7 @@ class OutputAsInputPlugin(BasePlugin):
 
         # Transform to target tag if different
         if self.config["target_tag"] != self.config["html_element"]:
-            target_element.name = self.config["target_tag"]
+            target_element.name = self.config["target_tag"]  # type: ignore[misc]
 
         # Create cousin file path
         cousin_path = stage_dir / src_path
