@@ -2,6 +2,7 @@
 """MkDocs plugin that captures HTML output and creates cousin Markdown files."""
 
 import logging
+import re
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -27,8 +28,12 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
 
     config_scheme = (
         ("stage_dir", config_options.Type(str, default="stage")),
-        ("html_element", config_options.Type(str, default="main")),
+        ("html_element", config_options.Type((str, list), default="main")),
         ("target_tag", config_options.Type(str, default="article")),
+        ("include_frontmatter", config_options.Type(bool, default=True)),
+        ("preserve_links", config_options.Type(bool, default=False)),
+        ("minify", config_options.Type(bool, default=False)),
+        ("prettify", config_options.Type(bool, default=False)),
         ("verbose", config_options.Type(bool, default=False)),
     )
 
@@ -40,9 +45,13 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
         self.docs_dir: Optional[Path] = None
 
     def on_config(self, config: dict[str, Any]) -> dict[str, Any]:  # type: ignore[override]
-        """Store site and docs directories."""
+        """Store site and docs directories and validate configuration."""
         self.site_dir = Path(config["site_dir"])
         self.docs_dir = Path(config["docs_dir"])
+
+        # Validate mutually exclusive options
+        if self.config["minify"] and self.config["prettify"]:
+            raise ValueError("OutputAsInput: Cannot use both 'minify' and 'prettify' options")
 
         if self.config["verbose"]:
             logger.info(f"OutputAsInput: site_dir={self.site_dir}, docs_dir={self.docs_dir}")
@@ -111,8 +120,13 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
             return
         
         # Determine HTML output path
-        html_path = src_path.replace(".md", "/index.html")
-        full_html_path = self.site_dir / html_path
+        # Special case: README.md often becomes index.html at root
+        if src_path.lower() == "readme.md":
+            html_path = "index.html"
+            full_html_path = self.site_dir / html_path
+        else:
+            html_path = src_path.replace(".md", "/index.html")
+            full_html_path = self.site_dir / html_path
 
         if not full_html_path.exists():
             # Try without the index.html suffix
@@ -121,6 +135,7 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
 
         if not full_html_path.exists():
             logger.warning(f"OutputAsInput: No HTML output found for {src_path}")
+            logger.warning(f"OutputAsInput: Looked for: {full_html_path}")
             return
 
         # Read and parse HTML
@@ -133,17 +148,52 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
 
         soup = BeautifulSoup(html_content, "html.parser")
 
-        # Extract target element
-        target_element = soup.find(self.config["html_element"])
-        if not target_element:
+        # Extract target element(s)
+        html_elements = self.config["html_element"]
+        if isinstance(html_elements, str):
+            html_elements = [html_elements]
+        
+        extracted_elements = []
+        for selector in html_elements:
+            # Try CSS selector first
+            elements = soup.select(selector)
+            if elements:
+                extracted_elements.extend(elements)
+            else:
+                # Fall back to tag name
+                element = soup.find(selector)
+                if element:
+                    extracted_elements.append(element)
+        
+        if not extracted_elements:
             logger.warning(
-                f"OutputAsInput: No <{self.config['html_element']}> found in {full_html_path}"
+                f"OutputAsInput: No elements matching {self.config['html_element']} found in {full_html_path}"
             )
             return
 
-        # Transform to target tag if different
-        if self.config["target_tag"] != self.config["html_element"]:
-            target_element.name = self.config["target_tag"]  # type: ignore[misc]
+        # If multiple elements, wrap them in a container
+        if len(extracted_elements) > 1:
+            container = soup.new_tag(self.config["target_tag"])
+            for elem in extracted_elements:
+                container.append(elem.extract())
+            target_element = container
+        else:
+            target_element = extracted_elements[0]
+            # Transform to target tag if different and single selector was a tag name
+            if isinstance(self.config["html_element"], str) and self.config["target_tag"] != self.config["html_element"]:
+                target_element.name = self.config["target_tag"]  # type: ignore[misc]
+
+        # Handle link preservation if requested
+        if self.config["preserve_links"]:
+            # Convert absolute links back to relative
+            for link in target_element.find_all(["a", "img", "link", "script"]):
+                for attr in ["href", "src"]:
+                    if link.has_attr(attr):
+                        url = link[attr]
+                        # Simple heuristic: if it starts with /, it's likely a root-relative link
+                        # In a real implementation, this would be more sophisticated
+                        if url.startswith("/") and not url.startswith("//"):
+                            link[attr] = f".{url}"
 
         # Create cousin file path
         cousin_path = stage_dir / src_path
@@ -152,14 +202,27 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
         # Write cousin file
         try:
             with open(cousin_path, "w", encoding="utf-8") as f:
-                # Write frontmatter if present
-                if file_info["frontmatter"]:
+                # Write frontmatter if present and configured to include it
+                if self.config["include_frontmatter"] and file_info["frontmatter"]:
                     f.write("---\n")
                     f.write(yaml.safe_dump(file_info["frontmatter"], default_flow_style=False))
                     f.write("---\n\n")
 
-                # Write extracted HTML
-                f.write(str(target_element))
+                # Write extracted HTML with formatting options
+                if self.config["minify"]:
+                    # Remove extra whitespace between tags
+                    html_output = str(target_element)
+                    # Remove newlines and compress multiple spaces
+                    html_output = html_output.replace("\n", "")
+                    html_output = re.sub(r'\s+', ' ', html_output)
+                    # Remove spaces between tags
+                    html_output = re.sub(r'>\s+<', '><', html_output)
+                elif self.config["prettify"]:
+                    html_output = target_element.prettify()
+                else:
+                    html_output = str(target_element)
+                
+                f.write(html_output)
                 f.write("\n")
 
             if self.config["verbose"]:

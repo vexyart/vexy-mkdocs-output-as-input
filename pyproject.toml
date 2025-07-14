@@ -67,6 +67,9 @@ Changelog = "https://github.com/vexyart/vexy-mkdocs-output-as-input/blob/main/CH
 [project.entry-points."mkdocs.plugins"]
 output-as-input = "mkdocs_output_as_input.plugin:OutputAsInputPlugin"
 
+[project.scripts]
+mkdocs-output-as-input = "mkdocs_output_as_input.cli:main"
+
 [tool.hatch.version]
 source = "vcs"
 

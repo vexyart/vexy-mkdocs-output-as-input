@@ -31,6 +31,8 @@ Or install from source:
 pip install git+https://github.com/vexyart/vexy-mkdocs-output-as-input
 ```
 
+This also installs a CLI tool: `mkdocs-output-as-input`
+
 ## Quick Start
 
 Add the plugin to your `mkdocs.yml`:
@@ -59,7 +61,25 @@ plugins:
       stage_dir: stage          # Output directory name (default: 'stage')
       html_element: main        # HTML element to extract (default: 'main')
       target_tag: article       # Tag to use in output (default: 'article')
+      include_frontmatter: true # Include YAML frontmatter (default: true)
+      preserve_links: false     # Convert absolute to relative links (default: false)
       verbose: false            # Enable verbose logging (default: false)
+```
+
+### Advanced Examples
+
+Extract multiple elements:
+```yaml
+plugins:
+  - output-as-input:
+      html_element: [main, aside]  # Extract both main content and sidebar
+```
+
+Extract using CSS selectors:
+```yaml
+plugins:
+  - output-as-input:
+      html_element: .content  # Extract element with class="content"
 ```
 
 ### Options Explained
@@ -67,8 +87,12 @@ plugins:
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `stage_dir` | string | `"stage"` | Directory name for output files (relative to project root) |
-| `html_element` | string | `"main"` | CSS selector for the HTML element to extract |
+| `html_element` | string or list | `"main"` | CSS selector(s) for HTML elements to extract |
 | `target_tag` | string | `"article"` | HTML tag to use in the output (replaces extracted element's tag) |
+| `include_frontmatter` | boolean | `true` | Include YAML frontmatter in output files |
+| `preserve_links` | boolean | `false` | Convert absolute links to relative (e.g., `/path` → `./path`) |
+| `minify` | boolean | `false` | Minify HTML output (remove whitespace) |
+| `prettify` | boolean | `false` | Prettify HTML output (add indentation) |
 | `verbose` | boolean | `false` | Enable detailed logging for debugging |
 
 ## How It Works

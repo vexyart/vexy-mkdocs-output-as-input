@@ -11,17 +11,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Complete documentation pages for getting started, configuration, examples, and API reference
 - Additional test cases for edge cases, improving coverage to 91%+
 - Proper error handling for missing directories (docs_dir, site_dir)
+- Configuration option `include_frontmatter` to control whether YAML frontmatter is included in output files (default: true)
+- Configuration option `preserve_links` to convert absolute links to relative paths (default: false)
+- Configuration options `minify` and `prettify` for HTML output formatting (mutually exclusive)
+- Support for multiple HTML selectors - extract multiple elements in one pass
+- Support for CSS selectors in addition to tag names (e.g., `.content`, `#main`)
+- CLI tool `mkdocs-output-as-input` for standalone HTML processing
+- CLI options for preserving relative links, minifying, and prettifying HTML output
+- CLI support for multiple selectors using `--html-element` flag multiple times
+- Comprehensive test suite for CLI functionality
 
 ### Changed
 - Replaced Black formatter with Ruff format in CI workflow
 - Enhanced type hints with proper type ignore comments for MkDocs compatibility
 - Improved error handling and logging throughout the plugin
+- Refactored `build_docs.py` to use proper two-stage MkDocs pipeline:
+  1. Source → Intermediate (with plugin capturing HTML)
+  2. Intermediate → Final (standard MkDocs build with full Material theme)
 
 ### Fixed
 - Fixed broken plugin implementation - all methods now properly implemented
 - Fixed broken test suite - all tests now passing with proper fixtures
 - Fixed mypy type checking errors with appropriate type annotations
 - Pre-commit configuration updated to remove conflicting Black formatter
+- Documentation build now generates proper MkDocs Material site (not manual HTML)
+- Removed duplicate README.md from docs directory
 
 ## [0.2.0] - 2025-01-14
 

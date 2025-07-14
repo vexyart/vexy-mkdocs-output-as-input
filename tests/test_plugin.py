@@ -22,6 +22,10 @@ class TestOutputAsInputPlugin:
             "stage_dir": "stage",
             "html_element": "main",
             "target_tag": "article",
+            "include_frontmatter": True,
+            "preserve_links": False,
+            "minify": False,
+            "prettify": False,
             "verbose": False,
         }
         return plugin
@@ -49,6 +53,7 @@ class TestOutputAsInputPlugin:
         assert plugin.config["stage_dir"] == "stage"
         assert plugin.config["html_element"] == "main"
         assert plugin.config["target_tag"] == "article"
+        assert plugin.config["include_frontmatter"] is True
         assert plugin.config["verbose"] is False
 
     def test_on_config_stores_paths(self, plugin, mkdocs_config):
@@ -309,3 +314,248 @@ invalid: [unclosed
         file_info = {"frontmatter": {}, "abs_src_path": str(temp_dir / "test.md")}
         plugin._process_file("test.md", file_info, stage_dir)
         # Should handle gracefully without error
+
+    def test_include_frontmatter_option(self, plugin, mkdocs_config, temp_dir):
+        """Test include_frontmatter configuration option."""
+        docs_dir = Path(mkdocs_config["docs_dir"])
+        site_dir = Path(mkdocs_config["site_dir"])
+
+        # Create HTML output
+        html_file = site_dir / "test.html"
+        html_file.write_text("""<!DOCTYPE html>
+<html>
+<body>
+<main>
+<h1>Test Page</h1>
+</main>
+</body>
+</html>""")
+
+        plugin.on_config(mkdocs_config)
+        
+        # Test with include_frontmatter=True (default)
+        plugin.source_files["test.md"] = {
+            "frontmatter": {"title": "Test Title", "author": "Test Author"},
+            "abs_src_path": str(temp_dir / "test.md"),
+        }
+        plugin.on_post_build(mkdocs_config)
+        
+        stage_dir = docs_dir.parent / "stage"
+        cousin_file = stage_dir / "test.md"
+        content = cousin_file.read_text()
+        
+        # Should include frontmatter
+        assert "---" in content
+        assert "title: Test Title" in content
+        assert "author: Test Author" in content
+        
+        # Test with include_frontmatter=False
+        plugin.config["include_frontmatter"] = False
+        plugin.on_post_build(mkdocs_config)
+        
+        content = cousin_file.read_text()
+        
+        # Should NOT include frontmatter
+        assert not content.startswith("---")
+        assert "title: Test Title" not in content
+        assert "author: Test Author" not in content
+        # But should still have HTML content
+        assert "<article>" in content
+        assert "<h1>Test Page</h1>" in content
+
+    def test_preserve_links_option(self, plugin, mkdocs_config, temp_dir):
+        """Test preserve_links configuration option."""
+        docs_dir = Path(mkdocs_config["docs_dir"])
+        site_dir = Path(mkdocs_config["site_dir"])
+
+        # Create HTML output with absolute links
+        html_file = site_dir / "test.html"
+        html_file.write_text("""<!DOCTYPE html>
+<html>
+<body>
+<main>
+<h1>Test Page</h1>
+<a href="/docs/page.html">Link</a>
+<img src="/images/pic.png">
+<a href="https://example.com">External</a>
+</main>
+</body>
+</html>""")
+
+        plugin.on_config(mkdocs_config)
+        plugin.source_files["test.md"] = {
+            "frontmatter": {},
+            "abs_src_path": str(temp_dir / "test.md"),
+        }
+        
+        # Test with preserve_links=True
+        plugin.config["preserve_links"] = True
+        plugin.on_post_build(mkdocs_config)
+        
+        stage_dir = docs_dir.parent / "stage"
+        cousin_file = stage_dir / "test.md"
+        content = cousin_file.read_text()
+        
+        # Should convert absolute links to relative
+        assert 'href="./docs/page.html"' in content
+        assert 'src="./images/pic.png"' in content
+        # External links should remain unchanged
+        assert 'href="https://example.com"' in content
+
+    def test_multiple_selectors(self, plugin, mkdocs_config, temp_dir):
+        """Test extraction of multiple selectors."""
+        docs_dir = Path(mkdocs_config["docs_dir"])
+        site_dir = Path(mkdocs_config["site_dir"])
+
+        # Create HTML with multiple elements
+        html_file = site_dir / "test.html"
+        html_file.write_text("""<!DOCTYPE html>
+<html>
+<body>
+<header><h1>Header Content</h1></header>
+<main><p>Main Content</p></main>
+<aside><p>Sidebar Content</p></aside>
+<footer><p>Footer Content</p></footer>
+</body>
+</html>""")
+
+        plugin.on_config(mkdocs_config)
+        plugin.source_files["test.md"] = {
+            "frontmatter": {},
+            "abs_src_path": str(temp_dir / "test.md"),
+        }
+        
+        # Test with multiple selectors
+        plugin.config["html_element"] = ["main", "aside"]
+        plugin.on_post_build(mkdocs_config)
+        
+        stage_dir = docs_dir.parent / "stage"
+        cousin_file = stage_dir / "test.md"
+        content = cousin_file.read_text()
+        
+        # Should include both main and aside content wrapped in article
+        assert "<article>" in content
+        assert "Main Content" in content
+        assert "Sidebar Content" in content
+        # Should NOT include header or footer
+        assert "Header Content" not in content
+        assert "Footer Content" not in content
+
+    def test_css_selectors(self, plugin, mkdocs_config, temp_dir):
+        """Test CSS selector support."""
+        docs_dir = Path(mkdocs_config["docs_dir"])
+        site_dir = Path(mkdocs_config["site_dir"])
+
+        # Create HTML with CSS selectable elements
+        html_file = site_dir / "test.html"
+        html_file.write_text("""<!DOCTYPE html>
+<html>
+<body>
+<div class="content">
+<h1>Title</h1>
+<p class="highlight">Important</p>
+<p>Normal</p>
+</div>
+<div class="sidebar">Sidebar</div>
+</body>
+</html>""")
+
+        plugin.on_config(mkdocs_config)
+        plugin.source_files["test.md"] = {
+            "frontmatter": {},
+            "abs_src_path": str(temp_dir / "test.md"),
+        }
+        
+        # Test with CSS selector
+        plugin.config["html_element"] = ".content"
+        plugin.on_post_build(mkdocs_config)
+        
+        stage_dir = docs_dir.parent / "stage"
+        cousin_file = stage_dir / "test.md"
+        content = cousin_file.read_text()
+        
+        # Should extract div with class="content"
+        assert "<article" in content
+        assert "Title" in content
+        assert "Important" in content
+        assert "Normal" in content
+        # Should NOT include sidebar
+        assert "Sidebar" not in content
+
+    def test_minify_option(self, plugin, mkdocs_config, temp_dir):
+        """Test minify option."""
+        docs_dir = Path(mkdocs_config["docs_dir"])
+        site_dir = Path(mkdocs_config["site_dir"])
+
+        # Create HTML with whitespace
+        html_file = site_dir / "test.html"
+        html_file.write_text("""<!DOCTYPE html>
+<html>
+<body>
+<main>
+    <h1>Title</h1>
+    <p>
+        Content with
+        lots of whitespace
+    </p>
+</main>
+</body>
+</html>""")
+
+        plugin.on_config(mkdocs_config)
+        plugin.source_files["test.md"] = {
+            "frontmatter": {},
+            "abs_src_path": str(temp_dir / "test.md"),
+        }
+        
+        # Test with minify=True
+        plugin.config["minify"] = True
+        plugin.on_post_build(mkdocs_config)
+        
+        stage_dir = docs_dir.parent / "stage"
+        cousin_file = stage_dir / "test.md"
+        content = cousin_file.read_text()
+        
+        # Should have no newlines in HTML (except final newline)
+        lines = content.strip().split('\n')
+        assert len(lines) == 1  # Only one line of HTML
+        # Check that spaces between tags are removed
+        assert "><" in content
+        # Check that content is minified but preserves single spaces in text
+        assert "Content with lots of whitespace" in content
+
+    def test_prettify_option(self, plugin, mkdocs_config, temp_dir):
+        """Test prettify option."""
+        docs_dir = Path(mkdocs_config["docs_dir"])
+        site_dir = Path(mkdocs_config["site_dir"])
+
+        # Create compact HTML
+        html_file = site_dir / "test.html"
+        html_file.write_text("""<html><body><main><h1>Title</h1><p>Content</p></main></body></html>""")
+
+        plugin.on_config(mkdocs_config)
+        plugin.source_files["test.md"] = {
+            "frontmatter": {},
+            "abs_src_path": str(temp_dir / "test.md"),
+        }
+        
+        # Test with prettify=True
+        plugin.config["prettify"] = True
+        plugin.on_post_build(mkdocs_config)
+        
+        stage_dir = docs_dir.parent / "stage"
+        cousin_file = stage_dir / "test.md"
+        content = cousin_file.read_text()
+        
+        # Should have proper indentation
+        lines = content.strip().split('\n')
+        assert len(lines) > 1  # Multiple lines
+        assert any(" <" in line for line in lines)  # Has indentation
+
+    def test_mutually_exclusive_options(self, plugin, mkdocs_config):
+        """Test that minify and prettify are mutually exclusive."""
+        plugin.config["minify"] = True
+        plugin.config["prettify"] = True
+        
+        with pytest.raises(ValueError, match="Cannot use both 'minify' and 'prettify'"):
+            plugin.on_config(mkdocs_config)
