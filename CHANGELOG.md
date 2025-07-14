@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Complete documentation pages for getting started, configuration, examples, and API reference
+- Additional test cases for edge cases, improving coverage to 91%+
+- Proper error handling for missing directories (docs_dir, site_dir)
+
+### Changed
+- Replaced Black formatter with Ruff format in CI workflow
+- Enhanced type hints with proper type ignore comments for MkDocs compatibility
+- Improved error handling and logging throughout the plugin
+
+### Fixed
+- Fixed broken plugin implementation - all methods now properly implemented
+- Fixed broken test suite - all tests now passing with proper fixtures
+- Fixed mypy type checking errors with appropriate type annotations
+- Pre-commit configuration updated to remove conflicting Black formatter
+
 ## [0.2.0] - 2025-01-14
 
 ### Changed

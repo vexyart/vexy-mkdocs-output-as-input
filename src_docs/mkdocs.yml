@@ -1,0 +1,40 @@
+site_name: MkDocs Output as Input - Example
+site_url: https://example.com/
+site_description: Real example of using the output-as-input plugin
+
+# Use README.md as the main documentation source
+docs_dir: ../
+nav:
+  - Home: README.md
+
+# Theme configuration
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - content.code.copy
+
+# Markdown extensions
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.details
+  - toc:
+      permalink: true
+
+# Plugins
+plugins:
+  - search
+  - output-as-input:
+      stage_dir: stage  # Output to stage directory
+      html_element: article  # Extract article element from Material theme
+      target_tag: div  # Convert to div in output
+      verbose: true  # Enable verbose logging to see what's happening

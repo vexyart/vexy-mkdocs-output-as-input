@@ -1,35 +1,24 @@
 # TODO
 
-## High Priority - COMPLETED ✅
+## Future Enhancements
 
-- [x] Fix broken plugin.py - methods are missing implementation and have syntax errors
-- [x] Fix broken test_plugin.py - methods are missing implementation
-
-## Medium Priority - COMPLETED ✅
-
-- [x] Add missing documentation pages referenced in mkdocs.yml nav
-- [x] Add pre-commit configuration file
-- [x] Ensure git-tag-based VCS versioning with hatch is working
-- [x] Improve error handling and logging throughout plugin
-
-## Low Priority - COMPLETED ✅
-
-- [x] Update CI workflow to use ruff format instead of black
-
-## Remaining Tasks
-
+### Testing
 - [ ] Add integration tests for real MkDocs builds
+- [ ] Add performance benchmarks for large documentation sites
+- [ ] Test with various MkDocs themes (Material, ReadTheDocs, etc.)
 
-## Summary
+### Features
+- [ ] Add support for custom HTML processors/transformers
+- [ ] Add option to preserve relative links in extracted HTML
+- [ ] Support for multiple output formats (JSON, YAML, etc.)
+- [ ] Add CLI tool for standalone processing
 
-The MkDocs plugin is now fully functional with:
-- ✅ Working plugin implementation with proper MkDocs hooks
-- ✅ Comprehensive test suite with 91%+ coverage
-- ✅ Complete documentation (getting-started.md, configuration.md, examples.md, api.md)
-- ✅ Working CI/CD pipeline with GitHub Actions
-- ✅ Pre-commit hooks for code quality
-- ✅ Proper type hints and linting
-- ✅ Git-tag based versioning with hatch
-- ✅ Error handling and logging
+### Documentation
+- [ ] Add video tutorial for setup and usage
+- [ ] Create example repository with different use cases
+- [ ] Add troubleshooting guide for common issues
 
-The plugin successfully captures HTML output from MkDocs builds and creates "cousin" Markdown files with preserved frontmatter and extracted HTML content.
+### CI/CD
+- [ ] Add automated dependency updates (Dependabot)
+- [ ] Set up security scanning (CodeQL)
+- [ ] Add changelog generation automation
