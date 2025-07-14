@@ -293,3 +293,19 @@ invalid: [unclosed
 
         assert result is None
         assert "nonexistent.md" not in plugin.source_files
+
+    def test_on_post_build_no_docs_dir(self, plugin):
+        """Test handling when docs_dir is None."""
+        plugin.docs_dir = None
+        plugin.on_post_build({})
+        # Should handle gracefully without error
+
+    def test_process_file_no_site_dir(self, plugin, temp_dir):
+        """Test handling when site_dir is None."""
+        plugin.site_dir = None
+        stage_dir = temp_dir / "stage"
+        stage_dir.mkdir()
+        
+        file_info = {"frontmatter": {}, "abs_src_path": str(temp_dir / "test.md")}
+        plugin._process_file("test.md", file_info, stage_dir)
+        # Should handle gracefully without error
