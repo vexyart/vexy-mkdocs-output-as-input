@@ -1,0 +1,55 @@
+---
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Configuration: configuration.md
+  - Examples: examples.md
+  - API Reference: api.md
+plugins:
+  - search
+  - output-as-input:
+      stage_dir: stage
+      verbose: true
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+repo_name: vexy-mkdocs-output-as-input
+repo_url: https://github.com/vexyart/vexy-mkdocs-output-as-input
+# this_file: more/vexy-mkdocs-output-as-input-refactored/mkdocs.yml
+site_name: MkDocs Output as Input Plugin
+site_url: https://vexyart.github.io/vexy-mkdocs-output-as-input/
+theme:
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  name: material
+  palette:
+    - accent: indigo
+      primary: indigo
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - accent: indigo
+      primary: indigo
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
