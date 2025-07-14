@@ -16,7 +16,15 @@ class TestOutputAsInputPlugin:
     @pytest.fixture
     def plugin(self):
         """Create a plugin instance."""
-        return OutputAsInputPlugin()
+        plugin = OutputAsInputPlugin()
+        # Initialize plugin configuration with defaults
+        plugin.config = {
+            "stage_dir": "stage",
+            "html_element": "main",
+            "target_tag": "article",
+            "verbose": False,
+        }
+        return plugin
 
     @pytest.fixture
     def temp_dir(self):

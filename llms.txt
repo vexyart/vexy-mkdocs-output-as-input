@@ -1,0 +1,5375 @@
+Project Structure:
+📁 vexy-mkdocs-output-as-input
+├── 📁 .github
+│   └── 📁 workflows
+│       ├── 📄 ci.yml
+│       └── 📄 release.yml
+├── 📁 docs
+│   ├── 📄 configuration.md
+│   ├── 📄 examples.md
+│   ├── 📄 getting-started.md
+│   └── 📄 index.md
+├── 📁 src
+│   └── 📁 mkdocs_output_as_input
+│       ├── 📄 __init__.py
+│       └── 📄 plugin.py
+├── 📁 tests
+│   └── 📄 test_plugin.py
+├── 📄 .gitignore
+├── 📄 AGENTS.md
+├── 📄 CHANGELOG.md
+├── 📄 CLAUDE.md
+├── 📄 GEMINI.md
+├── 📄 LICENSE
+├── 📄 llms.txt
+├── 📄 mkdocs.yml
+├── 📄 pyproject.toml
+├── 📄 README.md
+└── 📄 TODO.md
+
+
+<documents>
+<document index="1">
+<source>.github/workflows/ci.yml</source>
+<document_content>
+# this_file: more/mkdocs-output-as-input-refactored/.github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for setuptools-scm
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Run pre-commit
+        if: matrix.python-version == '3.11'
+        run: pre-commit run --all-files
+
+      - name: Run tests
+        run: |
+          pytest -v --cov=mkdocs_output_as_input --cov-report=xml --cov-report=term
+
+      - name: Upload coverage
+        if: matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Run ruff
+        run: ruff check --output-format=github .
+
+      - name: Run black
+        run: black --check --diff .
+
+      - name: Run mypy
+        run: mypy src
+</document_content>
+</document>
+
+<document index="2">
+<source>.github/workflows/release.yml</source>
+<document_content>
+# this_file: more/mkdocs-output-as-input-refactored/.github/workflows/release.yml
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write  # Required for PyPI trusted publishing
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for setuptools-scm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Check package
+        run: twine check dist/*
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish-pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mkdocs-output-as-input
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # Trusted publishing configured in PyPI project settings
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Extract changelog section
+        id: changelog
+        run: |
+          version=${GITHUB_REF#refs/tags/v}
+          awk "/## \[$version\]/{flag=1; next} /## \[/{flag=0} flag" CHANGELOG.md > release_notes.md
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.changelog.outputs.version }}
+          body_path: release_notes.md
+          files: dist/*
+          draft: false
+          prerelease: false
+</document_content>
+</document>
+
+<document index="3">
+<source>.gitignore</source>
+<document_content>
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+.env
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# Poetry
+poetry.lock
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# MkDocs
+site/
+stage/
+.cache/
+
+# setuptools-scm
+src/mkdocs_output_as_input/_version.py
+</document_content>
+</document>
+
+<document index="4">
+<source>AGENTS.md</source>
+<document_content>
+
+# `https://github.com/vexyart/vexy-mkdocs-output-as-input`
+
+## Project Overview
+
+This is an MkDocs plugin called `vexy-mkdocs-output-as-input` that captures rendered HTML output from MkDocs and creates "cousin" Markdown files containing the original YAML frontmatter plus the extracted HTML content. This enables post-processing workflows with other static site generators.
+
+## Development Commands
+
+### Setup & Installation
+```bash
+# Install development dependencies
+uv pip install -e ".[dev,test,docs]"
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Testing
+```bash
+# Run full test suite
+python -m pytest
+
+# Run with coverage
+python -m pytest --cov=mkdocs_output_as_input --cov-report=term-missing
+
+# Run specific test
+python -m pytest tests/test_plugin.py::test_plugin_default_config -v
+```
+
+### Code Quality
+```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+
+# Individual tools
+python -m ruff check src tests
+python -m ruff format src tests
+python -m mypy src
+```
+
+### Documentation
+```bash
+# Serve documentation locally
+mkdocs serve
+
+# Build documentation
+mkdocs build
+```
+
+## Architecture & Key Components
+
+### Plugin Structure
+The plugin is implemented in `src/mkdocs_output_as_input/plugin.py` with:
+- `OutputAsInputPlugin` class extending `mkdocs.plugins.BasePlugin`
+- Configuration schema with options: `stage_dir`, `html_element`, `target_tag`, `verbose`
+- Two main hooks:
+  - `on_page_read_source`: Captures source files and frontmatter during MkDocs processing
+  - `on_post_build`: Post-processes HTML and creates cousin files after build
+
+### Plugin Configuration
+In `mkdocs.yml`:
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory (default: "stage")
+      html_element: main        # HTML element to extract (default: "main")
+      target_tag: article       # Tag to wrap content (default: "article")
+      verbose: true            # Enable debug logging
+```
+
+### Key Implementation Details
+- Uses BeautifulSoup4 for HTML parsing and extraction
+- Preserves YAML frontmatter from source Markdown files
+- Creates output files with pattern: `{stage_dir}/{original_path}.md`
+- Handles edge cases: missing HTML elements, parsing errors, file I/O issues
+
+## Testing Guidelines
+
+The test suite in `tests/test_plugin.py` covers:
+- Default configuration behavior
+- Custom configuration options
+- Frontmatter preservation
+- HTML extraction with different selectors
+- Error handling scenarios
+- Verbose logging output
+
+When adding features:
+1. Write tests first following existing patterns
+2. Ensure >90% code coverage (CI enforces this)
+3. Test both success and error paths
+4. Use the provided fixtures (`plugin_instance`, `temp_docs_dir`)
+
+## Release Process
+
+The project uses GitHub Actions for automated releases:
+1. Update version in CHANGELOG.md following Keep a Changelog format
+2. Create a release on GitHub with tag `v{version}`
+3. CI automatically publishes to PyPI using trusted publishing
+
+## Common Development Tasks
+
+### Adding a New Configuration Option
+1. Add to `config_scheme` in `plugin.py`
+2. Update `__init__` method to use the option
+3. Implement logic in relevant hook methods
+4. Add tests for the new option
+5. Update documentation in README.md and docs/
+
+### Debugging Plugin Behavior
+1. Enable verbose mode in mkdocs.yml
+2. Use `logger.debug()` statements (already configured with loguru)
+3. Run MkDocs with: `mkdocs build -v`
+4. Check the stage directory for output files
+
+### Working with MkDocs Events
+The plugin uses MkDocs event hooks. Key references:
+- [MkDocs Plugin Development](https://www.mkdocs.org/dev-guide/plugins/)
+- [Available Events](https://www.mkdocs.org/dev-guide/plugins/#events)
+- Current hooks: `on_page_read_source`, `on_post_build`
+
+## Project-Specific Notes
+
+- The plugin must handle various MkDocs themes gracefully
+- Output files should be valid Markdown with proper YAML frontmatter
+- The stage directory is created automatically if it doesn't exist
+- BeautifulSoup parser uses 'html.parser' for consistency across platforms
+</document_content>
+</document>
+
+<document index="5">
+<source>CHANGELOG.md</source>
+<document_content>
+# Changelog
+
+All notable changes to vexy-mkdocs-output-as-input will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.2.0] - 2025-01-14
+
+### Changed
+- **BREAKING**: Migrated to src-layout package structure
+- **BREAKING**: Minimum Python version is now 3.9
+- Switched from Loguru to standard library logging for better integration
+- Modernized packaging with PEP 621 compliant pyproject.toml
+- Improved type hints throughout the codebase
+
+### Added
+- Comprehensive test suite with >90% coverage
+- Pre-commit hooks for code quality
+- GitHub Actions CI/CD workflows
+- Support for Python 3.9, 3.10, 3.11, and 3.12
+- Automated release process with trusted PyPI publishing
+- Development documentation in README
+
+### Fixed
+- Better error handling for missing files
+- Graceful handling of invalid YAML frontmatter
+- Improved logging messages for debugging
+
+## [0.1.0] - 2025-01-10
+
+### Added
+- Initial release of vexy-mkdocs-output-as-input plugin
+- Core functionality to capture HTML output and create cousin Markdown files
+- Configurable stage directory for output files
+- Configurable HTML element extraction (default: `<main>`)
+- Configurable target tag transformation (default: `<article>`)
+- Preservation of original YAML frontmatter
+- Verbose logging mode for debugging
+- Basic documentation and examples
+
+[Unreleased]: https://github.com/vexyart/vexy-mkdocs-output-as-input/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/vexyart/vexy-mkdocs-output-as-input/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/vexyart/vexy-mkdocs-output-as-input/releases/tag/v0.1.0
+</document_content>
+</document>
+
+<document index="6">
+<source>CLAUDE.md</source>
+<document_content>
+
+# `https://github.com/vexyart/vexy-mkdocs-output-as-input`
+
+## Project Overview
+
+This is an MkDocs plugin called `vexy-mkdocs-output-as-input` that captures rendered HTML output from MkDocs and creates "cousin" Markdown files containing the original YAML frontmatter plus the extracted HTML content. This enables post-processing workflows with other static site generators.
+
+## Development Commands
+
+### Setup & Installation
+```bash
+# Install development dependencies
+uv pip install -e ".[dev,test,docs]"
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Testing
+```bash
+# Run full test suite
+python -m pytest
+
+# Run with coverage
+python -m pytest --cov=mkdocs_output_as_input --cov-report=term-missing
+
+# Run specific test
+python -m pytest tests/test_plugin.py::test_plugin_default_config -v
+```
+
+### Code Quality
+```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+
+# Individual tools
+python -m ruff check src tests
+python -m ruff format src tests
+python -m mypy src
+```
+
+### Documentation
+```bash
+# Serve documentation locally
+mkdocs serve
+
+# Build documentation
+mkdocs build
+```
+
+## Architecture & Key Components
+
+### Plugin Structure
+The plugin is implemented in `src/mkdocs_output_as_input/plugin.py` with:
+- `OutputAsInputPlugin` class extending `mkdocs.plugins.BasePlugin`
+- Configuration schema with options: `stage_dir`, `html_element`, `target_tag`, `verbose`
+- Two main hooks:
+  - `on_page_read_source`: Captures source files and frontmatter during MkDocs processing
+  - `on_post_build`: Post-processes HTML and creates cousin files after build
+
+### Plugin Configuration
+In `mkdocs.yml`:
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory (default: "stage")
+      html_element: main        # HTML element to extract (default: "main")
+      target_tag: article       # Tag to wrap content (default: "article")
+      verbose: true            # Enable debug logging
+```
+
+### Key Implementation Details
+- Uses BeautifulSoup4 for HTML parsing and extraction
+- Preserves YAML frontmatter from source Markdown files
+- Creates output files with pattern: `{stage_dir}/{original_path}.md`
+- Handles edge cases: missing HTML elements, parsing errors, file I/O issues
+
+## Testing Guidelines
+
+The test suite in `tests/test_plugin.py` covers:
+- Default configuration behavior
+- Custom configuration options
+- Frontmatter preservation
+- HTML extraction with different selectors
+- Error handling scenarios
+- Verbose logging output
+
+When adding features:
+1. Write tests first following existing patterns
+2. Ensure >90% code coverage (CI enforces this)
+3. Test both success and error paths
+4. Use the provided fixtures (`plugin_instance`, `temp_docs_dir`)
+
+## Release Process
+
+The project uses GitHub Actions for automated releases:
+1. Update version in CHANGELOG.md following Keep a Changelog format
+2. Create a release on GitHub with tag `v{version}`
+3. CI automatically publishes to PyPI using trusted publishing
+
+## Common Development Tasks
+
+### Adding a New Configuration Option
+1. Add to `config_scheme` in `plugin.py`
+2. Update `__init__` method to use the option
+3. Implement logic in relevant hook methods
+4. Add tests for the new option
+5. Update documentation in README.md and docs/
+
+### Debugging Plugin Behavior
+1. Enable verbose mode in mkdocs.yml
+2. Use `logger.debug()` statements (already configured with loguru)
+3. Run MkDocs with: `mkdocs build -v`
+4. Check the stage directory for output files
+
+### Working with MkDocs Events
+The plugin uses MkDocs event hooks. Key references:
+- [MkDocs Plugin Development](https://www.mkdocs.org/dev-guide/plugins/)
+- [Available Events](https://www.mkdocs.org/dev-guide/plugins/#events)
+- Current hooks: `on_page_read_source`, `on_post_build`
+
+## Project-Specific Notes
+
+- The plugin must handle various MkDocs themes gracefully
+- Output files should be valid Markdown with proper YAML frontmatter
+- The stage directory is created automatically if it doesn't exist
+- BeautifulSoup parser uses 'html.parser' for consistency across platforms
+</document_content>
+</document>
+
+<document index="7">
+<source>GEMINI.md</source>
+<document_content>
+
+# `https://github.com/vexyart/vexy-mkdocs-output-as-input`
+
+## Project Overview
+
+This is an MkDocs plugin called `vexy-mkdocs-output-as-input` that captures rendered HTML output from MkDocs and creates "cousin" Markdown files containing the original YAML frontmatter plus the extracted HTML content. This enables post-processing workflows with other static site generators.
+
+## Development Commands
+
+### Setup & Installation
+```bash
+# Install development dependencies
+uv pip install -e ".[dev,test,docs]"
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Testing
+```bash
+# Run full test suite
+python -m pytest
+
+# Run with coverage
+python -m pytest --cov=mkdocs_output_as_input --cov-report=term-missing
+
+# Run specific test
+python -m pytest tests/test_plugin.py::test_plugin_default_config -v
+```
+
+### Code Quality
+```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+
+# Individual tools
+python -m ruff check src tests
+python -m ruff format src tests
+python -m mypy src
+```
+
+### Documentation
+```bash
+# Serve documentation locally
+mkdocs serve
+
+# Build documentation
+mkdocs build
+```
+
+## Architecture & Key Components
+
+### Plugin Structure
+The plugin is implemented in `src/mkdocs_output_as_input/plugin.py` with:
+- `OutputAsInputPlugin` class extending `mkdocs.plugins.BasePlugin`
+- Configuration schema with options: `stage_dir`, `html_element`, `target_tag`, `verbose`
+- Two main hooks:
+  - `on_page_read_source`: Captures source files and frontmatter during MkDocs processing
+  - `on_post_build`: Post-processes HTML and creates cousin files after build
+
+### Plugin Configuration
+In `mkdocs.yml`:
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory (default: "stage")
+      html_element: main        # HTML element to extract (default: "main")
+      target_tag: article       # Tag to wrap content (default: "article")
+      verbose: true            # Enable debug logging
+```
+
+### Key Implementation Details
+- Uses BeautifulSoup4 for HTML parsing and extraction
+- Preserves YAML frontmatter from source Markdown files
+- Creates output files with pattern: `{stage_dir}/{original_path}.md`
+- Handles edge cases: missing HTML elements, parsing errors, file I/O issues
+
+## Testing Guidelines
+
+The test suite in `tests/test_plugin.py` covers:
+- Default configuration behavior
+- Custom configuration options
+- Frontmatter preservation
+- HTML extraction with different selectors
+- Error handling scenarios
+- Verbose logging output
+
+When adding features:
+1. Write tests first following existing patterns
+2. Ensure >90% code coverage (CI enforces this)
+3. Test both success and error paths
+4. Use the provided fixtures (`plugin_instance`, `temp_docs_dir`)
+
+## Release Process
+
+The project uses GitHub Actions for automated releases:
+1. Update version in CHANGELOG.md following Keep a Changelog format
+2. Create a release on GitHub with tag `v{version}`
+3. CI automatically publishes to PyPI using trusted publishing
+
+## Common Development Tasks
+
+### Adding a New Configuration Option
+1. Add to `config_scheme` in `plugin.py`
+2. Update `__init__` method to use the option
+3. Implement logic in relevant hook methods
+4. Add tests for the new option
+5. Update documentation in README.md and docs/
+
+### Debugging Plugin Behavior
+1. Enable verbose mode in mkdocs.yml
+2. Use `logger.debug()` statements (already configured with loguru)
+3. Run MkDocs with: `mkdocs build -v`
+4. Check the stage directory for output files
+
+### Working with MkDocs Events
+The plugin uses MkDocs event hooks. Key references:
+- [MkDocs Plugin Development](https://www.mkdocs.org/dev-guide/plugins/)
+- [Available Events](https://www.mkdocs.org/dev-guide/plugins/#events)
+- Current hooks: `on_page_read_source`, `on_post_build`
+
+## Project-Specific Notes
+
+- The plugin must handle various MkDocs themes gracefully
+- Output files should be valid Markdown with proper YAML frontmatter
+- The stage directory is created automatically if it doesn't exist
+- BeautifulSoup parser uses 'html.parser' for consistency across platforms
+</document_content>
+</document>
+
+<document index="8">
+<source>LICENSE</source>
+<document_content>
+MIT License
+
+Copyright (c) 2025 MkDocs Output as Input Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</document_content>
+</document>
+
+<document index="9">
+<source>README.md</source>
+<document_content>
+# vexy-mkdocs-output-as-input
+
+[![PyPI version](https://badge.fury.io/py/vexy-mkdocs-output-as-input.svg)](https://pypi.org/project/vexy-mkdocs-output-as-input/)
+[![CI](https://github.com/vexyart/vexy-mkdocs-output-as-input/workflows/CI/badge.svg)](https://github.com/vexyart/vexy-mkdocs-output-as-input/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/vexyart/vexy-mkdocs-output-as-input/branch/main/graph/badge.svg)](https://codecov.io/gh/vexyart/vexy-mkdocs-output-as-input)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python versions](https://img.shields.io/pypi/pyversions/vexy-mkdocs-output-as-input.svg)](https://pypi.org/project/vexy-mkdocs-output-as-input/)
+
+A MkDocs plugin that captures HTML output and creates "cousin" Markdown files with original frontmatter and extracted HTML content.
+
+## Features
+
+This plugin enables powerful post-processing workflows by:
+
+1. ✅ Preserving your original Markdown structure and frontmatter
+2. ✅ Capturing the fully-rendered HTML output from MkDocs
+3. ✅ Creating new Markdown files that combine original metadata with processed HTML
+4. ✅ Enabling further processing by other static site generators
+
+## Installation
+
+Install from PyPI:
+
+```bash
+uv pip install --system --upgrade vexy-mkdocs-output-as-input
+```
+
+Or install from source:
+
+```bash
+pip install git+https://github.com/vexyart/vexy-mkdocs-output-as-input
+```
+
+## Quick Start
+
+Add the plugin to your `mkdocs.yml`:
+
+```yaml
+plugins:
+  - search  # Other plugins
+  - output-as-input
+```
+
+Build your site:
+
+```bash
+mkdocs build
+```
+
+Find your processed files in the `stage/` directory (relative to your MkDocs project root).
+
+## Configuration
+
+All configuration options with their defaults:
+
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory name (default: 'stage')
+      html_element: main        # HTML element to extract (default: 'main')
+      target_tag: article       # Tag to use in output (default: 'article')
+      verbose: false            # Enable verbose logging (default: false)
+```
+
+### Options Explained
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `stage_dir` | string | `"stage"` | Directory name for output files (relative to project root) |
+| `html_element` | string | `"main"` | CSS selector for the HTML element to extract |
+| `target_tag` | string | `"article"` | HTML tag to use in the output (replaces extracted element's tag) |
+| `verbose` | boolean | `false` | Enable detailed logging for debugging |
+
+## How It Works
+
+### Input → Process → Output
+
+1. **Input**: Your source Markdown with frontmatter
+   ```markdown
+   ---
+   title: My Page
+   author: Jane Doe
+   ---
+   
+   # My Page
+   
+   This is my content with **markdown**.
+   ```
+
+2. **MkDocs Processing**: Renders to HTML as usual
+   ```html
+   <main class="md-content">
+     <h1>My Page</h1>
+     <p>This is my content with <strong>markdown</strong>.</p>
+   </main>
+   ```
+
+3. **Output**: Cousin file with preserved frontmatter + extracted HTML
+   ```markdown
+   ---
+   title: My Page
+   author: Jane Doe
+   ---
+   
+   <article class="md-content">
+     <h1>My Page</h1>
+     <p>This is my content with <strong>markdown</strong>.</p>
+   </article>
+   ```
+
+## Use Cases
+
+### 🔄 Multi-Stage Documentation Pipeline
+
+Process documentation through MkDocs first, then feed to another SSG:
+
+```yaml
+# mkdocs.yml
+plugins:
+  - output-as-input:
+      stage_dir: hugo/content
+
+# Then run:
+# mkdocs build && hugo build
+```
+
+### 📝 Content Extraction
+
+Extract just the article content without theme wrapper:
+
+```yaml
+plugins:
+  - output-as-input:
+      html_element: article
+      target_tag: div
+```
+
+### 🎨 Custom Post-Processing
+
+Preserve MkDocs rendering while preparing for custom templates:
+
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: _includes
+      html_element: main
+      target_tag: section
+```
+
+## Examples
+
+### Basic Example
+
+```yaml
+# mkdocs.yml
+site_name: My Documentation
+plugins:
+  - output-as-input
+```
+
+### Advanced Example
+
+```yaml
+# mkdocs.yml
+site_name: My Documentation
+theme:
+  name: material
+
+plugins:
+  - search
+  - output-as-input:
+      stage_dir: processed
+      html_element: article.md-content__inner
+      target_tag: main
+      verbose: true
+
+# Process specific content area from Material theme
+```
+
+### Integration Example
+
+Using with other tools in a documentation pipeline:
+
+```bash
+#!/bin/bash
+# build.sh
+
+# Stage 1: Build with MkDocs + plugins
+mkdocs build
+
+# Stage 2: Process staged output
+python post_process.py stage/
+
+# Stage 3: Build final site
+hugo --contentDir=stage/
+```
+
+## Development
+
+### Setup Development Environment
+
+```bash
+# Clone the repository
+git clone https://github.com/vexyart/vexy-mkdocs-output-as-input
+cd vexy-mkdocs-output-as-input
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install in development mode
+pip install -e .[dev]
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=mkdocs_output_as_input --cov-report=html
+
+# Run specific test
+pytest tests/test_plugin.py::TestOutputAsInputPlugin::test_default_config
+```
+
+### Code Quality
+
+```bash
+# Format code
+black src tests
+
+# Lint code
+ruff check src tests
+
+# Type check
+mypy src
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- 📧 Email: you@example.com
+- 🐛 Issues: [GitHub Issues](https://github.com/vexyart/vexy-mkdocs-output-as-input/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/vexyart/vexy-mkdocs-output-as-input/discussions)
+</document_content>
+</document>
+
+<document index="10">
+<source>TODO.md</source>
+<document_content>
+# TODO
+
+## High Priority
+
+- [ ] Fix broken plugin.py - methods are missing implementation and have syntax errors
+- [ ] Fix broken test_plugin.py - methods are missing implementation
+
+## Medium Priority
+
+- [ ] Add missing documentation pages referenced in mkdocs.yml nav
+- [ ] Add pre-commit configuration file
+- [ ] Ensure git-tag-based VCS versioning with hatch is working
+- [ ] Improve error handling and logging throughout plugin
+
+## Low Priority
+
+- [ ] Update CI workflow to use ruff format instead of black
+- [ ] Add integration tests for real MkDocs builds
+
+</document_content>
+</document>
+
+<document index="11">
+<source>docs/configuration.md</source>
+<document_content>
+---
+title: Configuration
+description: Complete configuration reference for the MkDocs Output as Input plugin
+---
+
+# Configuration
+
+The MkDocs Output as Input plugin provides several configuration options to customize its behavior.
+
+## Basic Configuration
+
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory (default: 'stage')
+      html_element: main        # HTML element to extract (default: 'main')
+      target_tag: article       # Tag to use in output (default: 'article')
+      verbose: false           # Enable verbose logging (default: false)
+```
+
+## Configuration Options
+
+### `stage_dir`
+
+- **Type**: `string`
+- **Default**: `"stage"`
+- **Description**: Directory name for output files, relative to your project root
+
+**Example**:
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: processed
+```
+
+This creates cousin files in a `processed/` directory instead of `stage/`.
+
+### `html_element`
+
+- **Type**: `string`
+- **Default**: `"main"`
+- **Description**: CSS selector for the HTML element to extract from the built pages
+
+**Common values**:
+- `"main"` - Extract the main content area
+- `"article"` - Extract article elements
+- `"div.content"` - Extract divs with class "content"
+- `"#content"` - Extract element with id "content"
+
+**Example**:
+```yaml
+plugins:
+  - output-as-input:
+      html_element: article.post-content
+```
+
+### `target_tag`
+
+- **Type**: `string`
+- **Default**: `"article"`
+- **Description**: HTML tag to use in the output file (replaces the extracted element's tag)
+
+**Example**:
+```yaml
+plugins:
+  - output-as-input:
+      html_element: main
+      target_tag: section
+```
+
+This extracts `<main>` elements and converts them to `<section>` in the output.
+
+### `verbose`
+
+- **Type**: `boolean`
+- **Default**: `false`
+- **Description**: Enable detailed logging for debugging
+
+**Example**:
+```yaml
+plugins:
+  - output-as-input:
+      verbose: true
+```
+
+## Configuration Examples
+
+### Material Theme
+
+For the Material theme, you might want to extract the inner content:
+
+```yaml
+plugins:
+  - output-as-input:
+      html_element: article.md-content__inner
+      target_tag: div
+```
+
+### Custom Output Directory
+
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: hugo/content
+      html_element: main
+      target_tag: article
+```
+
+### Debug Mode
+
+```yaml
+plugins:
+  - output-as-input:
+      verbose: true
+```
+
+## Advanced Usage
+
+### Multiple Processing Steps
+
+You can use the plugin in a multi-step build process:
+
+1. **MkDocs build** with output-as-input plugin
+2. **Custom processing** of the stage directory
+3. **Secondary build** with another static site generator
+
+```bash
+#!/bin/bash
+# Build with MkDocs
+mkdocs build
+
+# Post-process the staged files
+python process_stage.py
+
+# Build with Hugo
+hugo --contentDir=stage/
+```
+
+### Theme Compatibility
+
+The plugin should work with any MkDocs theme. For best results:
+
+1. Inspect your theme's HTML structure
+2. Identify the main content element
+3. Configure `html_element` accordingly
+
+**Finding the right element**:
+1. Build your site normally
+2. Open a page in your browser
+3. Use developer tools to inspect the HTML
+4. Look for the element containing your content
+
+## Troubleshooting
+
+### No Output Files
+
+If no cousin files are created:
+
+1. Enable verbose mode
+2. Check that HTML files exist in the site directory
+3. Verify that the `html_element` selector matches your theme
+
+### Empty Output Files
+
+If cousin files are empty:
+
+1. Check that the `html_element` selector is correct
+2. Verify that the element exists in your HTML output
+3. Try a more general selector like `"body"` for testing
+
+### Permission Errors
+
+If you get permission errors:
+
+1. Ensure the project directory is writable
+2. Try a different `stage_dir` location
+3. Check file system permissions
+
+</document_content>
+</document>
+
+<document index="12">
+<source>docs/examples.md</source>
+<document_content>
+---
+title: Examples
+description: Real-world usage examples for the MkDocs Output as Input plugin
+---
+
+# Examples
+
+This page provides practical examples of how to use the MkDocs Output as Input plugin in various scenarios.
+
+## Basic Usage
+
+### Simple Blog Post Processing
+
+**Input** (`docs/posts/my-post.md`):
+```markdown
+---
+title: My Blog Post
+date: 2025-01-14
+author: Jane Doe
+tags: [python, documentation]
+---
+
+# My Blog Post
+
+This is a **markdown** blog post with some content.
+```
+
+**Configuration** (`mkdocs.yml`):
+```yaml
+plugins:
+  - output-as-input
+```
+
+**Output** (`stage/posts/my-post.md`):
+```markdown
+---
+title: My Blog Post
+date: 2025-01-14
+author: Jane Doe
+tags: [python, documentation]
+---
+
+<article class="md-content">
+  <h1>My Blog Post</h1>
+  <p>This is a <strong>markdown</strong> blog post with some content.</p>
+</article>
+```
+
+## Multi-Stage Documentation Pipeline
+
+### MkDocs → Hugo Pipeline
+
+**Scenario**: Use MkDocs for authoring and Hugo for final site generation.
+
+**MkDocs Configuration** (`mkdocs.yml`):
+```yaml
+site_name: My Documentation
+theme:
+  name: material
+
+plugins:
+  - search
+  - output-as-input:
+      stage_dir: hugo/content
+      html_element: main
+      target_tag: div
+```
+
+**Hugo Configuration** (`hugo.yaml`):
+```yaml
+contentDir: hugo/content
+baseURL: https://example.com
+```
+
+**Build Script** (`build.sh`):
+```bash
+#!/bin/bash
+set -e
+
+echo "Building with MkDocs..."
+mkdocs build
+
+echo "Processing with Hugo..."
+hugo --contentDir=hugo/content
+
+echo "Done!"
+```
+
+### MkDocs → Jekyll Pipeline
+
+**Configuration** (`mkdocs.yml`):
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: _posts
+      html_element: article
+      target_tag: div
+```
+
+**Post-processing** (`process.py`):
+```python
+import os
+import re
+from pathlib import Path
+
+# Convert MkDocs output to Jekyll format
+for md_file in Path("_posts").glob("**/*.md"):
+    content = md_file.read_text()
+    
+    # Add Jekyll layout to frontmatter
+    content = re.sub(
+        r'(---\n.*?)\n---',
+        r'\1\nlayout: post\n---',
+        content,
+        flags=re.DOTALL
+    )
+    
+    md_file.write_text(content)
+```
+
+## Theme-Specific Examples
+
+### Material Theme
+
+**Extract inner content**:
+```yaml
+plugins:
+  - output-as-input:
+      html_element: article.md-content__inner
+      target_tag: section
+```
+
+### ReadTheDocs Theme
+
+**Extract main content**:
+```yaml
+plugins:
+  - output-as-input:
+      html_element: div.rst-content
+      target_tag: article
+```
+
+### Custom Theme
+
+**For a custom theme with specific structure**:
+```yaml
+plugins:
+  - output-as-input:
+      html_element: div.content-wrapper > div.main-content
+      target_tag: main
+```
+
+## Content Processing Examples
+
+### API Documentation
+
+**Input** (`docs/api/users.md`):
+```markdown
+---
+title: User API
+api_version: v1
+endpoint: /api/users
+---
+
+# User API
+
+The User API allows you to manage users.
+
+## GET /api/users
+
+Returns a list of users.
+```
+
+**Configuration**:
+```yaml
+plugins:
+  - mkdocstrings
+  - output-as-input:
+      stage_dir: api_docs
+      html_element: main
+      target_tag: section
+```
+
+### Tutorial Series
+
+**Input** (`docs/tutorials/setup.md`):
+```markdown
+---
+title: Setup Tutorial
+series: getting-started
+order: 1
+difficulty: beginner
+---
+
+# Setup Tutorial
+
+This tutorial will guide you through the setup process.
+```
+
+**Post-processing** to group by series:
+```python
+import yaml
+from pathlib import Path
+from collections import defaultdict
+
+# Group tutorials by series
+series_map = defaultdict(list)
+
+for md_file in Path("stage/tutorials").glob("*.md"):
+    with open(md_file) as f:
+        content = f.read()
+        
+    # Extract frontmatter
+    if content.startswith('---'):
+        _, fm_text, body = content.split('---', 2)
+        frontmatter = yaml.safe_load(fm_text)
+        series = frontmatter.get('series', 'misc')
+        
+        series_map[series].append({
+            'file': md_file,
+            'title': frontmatter.get('title'),
+            'order': frontmatter.get('order', 999)
+        })
+
+# Create index files for each series
+for series, tutorials in series_map.items():
+    tutorials.sort(key=lambda x: x['order'])
+    
+    index_content = f"# {series.title()} Series\n\n"
+    for tutorial in tutorials:
+        index_content += f"- [{tutorial['title']}]({tutorial['file'].name})\n"
+    
+    (Path("stage/tutorials") / f"{series}-index.md").write_text(index_content)
+```
+
+## Integration Examples
+
+### GitHub Actions Workflow
+
+**`.github/workflows/docs.yml`**:
+```yaml
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install mkdocs-material vexy-mkdocs-output-as-input
+      
+      - name: Build with MkDocs
+        run: mkdocs build
+      
+      - name: Process staged files
+        run: python scripts/process_stage.py
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+```
+
+### Docker Multi-Stage Build
+
+**`Dockerfile`**:
+```dockerfile
+# Stage 1: MkDocs build
+FROM python:3.11-slim as mkdocs-builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY docs/ docs/
+COPY mkdocs.yml .
+RUN mkdocs build
+
+# Stage 2: Hugo build
+FROM hugomods/hugo:latest as hugo-builder
+WORKDIR /app
+COPY --from=mkdocs-builder /app/stage ./content
+COPY hugo.yaml .
+RUN hugo
+
+# Stage 3: Final image
+FROM nginx:alpine
+COPY --from=hugo-builder /app/public /usr/share/nginx/html
+```
+
+## Debugging Examples
+
+### Verbose Mode
+
+**Enable detailed logging**:
+```yaml
+plugins:
+  - output-as-input:
+      verbose: true
+```
+
+**Sample output**:
+```
+INFO - OutputAsInput: site_dir=/app/site, docs_dir=/app/docs
+INFO - OutputAsInput: Captured source index.md
+INFO - OutputAsInput: Captured source getting-started.md
+INFO - OutputAsInput: Creating stage directory at /app/stage
+INFO - OutputAsInput: Created cousin file /app/stage/index.md
+INFO - OutputAsInput: Created cousin file /app/stage/getting-started.md
+INFO - OutputAsInput: Processed 2/2 files
+```
+
+### Testing Different Selectors
+
+**Test script** (`test_selectors.py`):
+```python
+from bs4 import BeautifulSoup
+from pathlib import Path
+
+html_file = Path("site/index.html")
+html_content = html_file.read_text()
+soup = BeautifulSoup(html_content, 'html.parser')
+
+selectors = [
+    'main',
+    'article',
+    'div.content',
+    'div.md-content',
+    '#content',
+    'main.md-content'
+]
+
+for selector in selectors:
+    element = soup.select_one(selector)
+    if element:
+        print(f"✓ {selector}: Found element with {len(element.get_text())} characters")
+    else:
+        print(f"✗ {selector}: No element found")
+```
+
+## Best Practices
+
+1. **Start simple**: Begin with default settings and adjust as needed
+2. **Use verbose mode**: Enable verbose logging during development
+3. **Test selectors**: Verify your HTML element selector works across pages
+4. **Backup frontmatter**: The plugin preserves frontmatter, but always keep backups
+5. **Version control**: Keep both source and stage directories under version control
+6. **Document your pipeline**: Create clear documentation for your processing steps
+
+</document_content>
+</document>
+
+<document index="13">
+<source>docs/getting-started.md</source>
+<document_content>
+---
+title: Getting Started
+description: Quick start guide for the MkDocs Output as Input plugin
+---
+
+# Getting Started
+
+This guide will help you get up and running with the MkDocs Output as Input plugin.
+
+## Installation
+
+### From PyPI
+
+```bash
+pip install vexy-mkdocs-output-as-input
+```
+
+### From Source
+
+```bash
+git clone https://github.com/vexyart/vexy-mkdocs-output-as-input
+cd vexy-mkdocs-output-as-input
+pip install -e .
+```
+
+## Basic Configuration
+
+Add the plugin to your `mkdocs.yml` file:
+
+```yaml
+plugins:
+  - search  # Keep your existing plugins
+  - output-as-input
+```
+
+## Your First Build
+
+1. **Create a simple Markdown file** with frontmatter:
+
+   ```markdown
+   ---
+   title: My First Page
+   author: Your Name
+   date: 2025-01-14
+   ---
+   
+   # My First Page
+   
+   This is some **markdown** content.
+   ```
+
+2. **Run MkDocs build**:
+
+   ```bash
+   mkdocs build
+   ```
+
+3. **Check the stage directory**:
+
+   ```bash
+   ls stage/
+   ```
+
+   You should see a cousin file with the same name as your source file.
+
+## Verifying the Output
+
+The cousin file will contain:
+
+- **Original frontmatter** preserved exactly
+- **Processed HTML content** extracted from the built site
+- **Configurable HTML tag** wrapping the content
+
+## Next Steps
+
+- Learn about [configuration options](configuration.md)
+- Explore [usage examples](examples.md)
+- Check the [API reference](api.md)
+
+## Troubleshooting
+
+### Plugin Not Found
+
+If you get an error about the plugin not being found:
+
+```bash
+pip install vexy-mkdocs-output-as-input
+```
+
+### No Output Files
+
+Enable verbose mode to see what's happening:
+
+```yaml
+plugins:
+  - output-as-input:
+      verbose: true
+```
+
+### Permission Errors
+
+Make sure you have write permissions in your project directory, or specify a different output directory:
+
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: /path/to/writable/directory
+```
+
+</document_content>
+</document>
+
+<document index="14">
+<source>docs/index.md</source>
+<document_content>
+---
+title: MkDocs Output as Input
+description: Capture HTML output and create cousin Markdown files
+---
+
+# MkDocs Output as Input Plugin
+
+Welcome to the documentation for the MkDocs Output as Input plugin! This plugin enables powerful post-processing workflows by capturing MkDocs HTML output and creating new Markdown files that preserve your original frontmatter.
+
+## What does it do?
+
+This plugin creates a bridge between MkDocs and other static site generators or processing pipelines:
+
+```mermaid
+graph LR
+    A[Source Markdown<br/>with Frontmatter] --> B[MkDocs Build]
+    B --> C[HTML Output]
+    C --> D[Plugin Extracts<br/>Content]
+    D --> E[Cousin Markdown<br/>with HTML + Frontmatter]
+    E --> F[Further Processing]
+```
+
+## Quick Example
+
+=== "Input (source.md)"
+
+    ```markdown
+    ---
+    title: My Article
+    date: 2025-01-14
+    tags: [tutorial, mkdocs]
+    ---
+    
+    # My Article
+    
+    This is my content with **Markdown** formatting.
+    ```
+
+=== "Output (stage/source.md)"
+
+    ```markdown
+    ---
+    title: My Article
+    date: 2025-01-14
+    tags: [tutorial, mkdocs]
+    ---
+    
+    <article class="md-content">
+      <h1>My Article</h1>
+      <p>This is my content with <strong>Markdown</strong> formatting.</p>
+    </article>
+    ```
+
+## Key Features
+
+- 🎯 **Preserves Frontmatter**: All your YAML metadata is maintained
+- 🔍 **Selective Extraction**: Choose which HTML element to extract
+- 🏷️ **Tag Transformation**: Convert extracted elements to different tags
+- 📁 **Flexible Output**: Configure where cousin files are created
+- 🐛 **Debug Support**: Verbose logging for troubleshooting
+
+## Installation
+
+```bash
+pip install vexy-mkdocs-output-as-input
+```
+
+Then add to your `mkdocs.yml`:
+
+```yaml
+plugins:
+  - output-as-input
+```
+
+## Next Steps
+
+- [Getting Started](getting-started.md) - Set up your first configuration
+- [Configuration](configuration.md) - Explore all options
+- [Examples](examples.md) - See real-world use cases
+- [API Reference](api.md) - Detailed plugin documentation
+</document_content>
+</document>
+
+<document index="15">
+<source>llms.txt</source>
+<document_content>
+Project Structure:
+📁 vexy-mkdocs-output-as-input
+├── 📁 .github
+│   └── 📁 workflows
+│       ├── 📄 ci.yml
+│       └── 📄 release.yml
+├── 📁 docs
+│   ├── 📄 configuration.md
+│   ├── 📄 getting-started.md
+│   └── 📄 index.md
+├── 📁 src
+│   └── 📁 mkdocs_output_as_input
+│       ├── 📄 __init__.py
+│       └── 📄 plugin.py
+├── 📁 tests
+│   └── 📄 test_plugin.py
+├── 📄 .gitignore
+├── 📄 AGENTS.md
+├── 📄 CHANGELOG.md
+├── 📄 CLAUDE.md
+├── 📄 GEMINI.md
+├── 📄 LICENSE
+├── 📄 llms.txt
+├── 📄 mkdocs.yml
+├── 📄 pyproject.toml
+├── 📄 README.md
+└── 📄 TODO.md
+
+
+<documents>
+<document index="1">
+<source>.github/workflows/ci.yml</source>
+<document_content>
+# this_file: more/mkdocs-output-as-input-refactored/.github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for setuptools-scm
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Run pre-commit
+        if: matrix.python-version == '3.11'
+        run: pre-commit run --all-files
+
+      - name: Run tests
+        run: |
+          pytest -v --cov=mkdocs_output_as_input --cov-report=xml --cov-report=term
+
+      - name: Upload coverage
+        if: matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Run ruff
+        run: ruff check --output-format=github .
+
+      - name: Run black
+        run: black --check --diff .
+
+      - name: Run mypy
+        run: mypy src
+</document_content>
+</document>
+
+<document index="2">
+<source>.github/workflows/release.yml</source>
+<document_content>
+# this_file: more/mkdocs-output-as-input-refactored/.github/workflows/release.yml
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write  # Required for PyPI trusted publishing
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for setuptools-scm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Check package
+        run: twine check dist/*
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish-pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mkdocs-output-as-input
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # Trusted publishing configured in PyPI project settings
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Extract changelog section
+        id: changelog
+        run: |
+          version=${GITHUB_REF#refs/tags/v}
+          awk "/## \[$version\]/{flag=1; next} /## \[/{flag=0} flag" CHANGELOG.md > release_notes.md
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.changelog.outputs.version }}
+          body_path: release_notes.md
+          files: dist/*
+          draft: false
+          prerelease: false
+</document_content>
+</document>
+
+<document index="3">
+<source>.gitignore</source>
+<document_content>
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+.env
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# Poetry
+poetry.lock
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# MkDocs
+site/
+stage/
+.cache/
+
+# setuptools-scm
+src/mkdocs_output_as_input/_version.py
+</document_content>
+</document>
+
+<document index="4">
+<source>AGENTS.md</source>
+<document_content>
+
+# `https://github.com/vexyart/vexy-mkdocs-output-as-input`
+
+## Project Overview
+
+This is an MkDocs plugin called `vexy-mkdocs-output-as-input` that captures rendered HTML output from MkDocs and creates "cousin" Markdown files containing the original YAML frontmatter plus the extracted HTML content. This enables post-processing workflows with other static site generators.
+
+## Development Commands
+
+### Setup & Installation
+```bash
+# Install development dependencies
+uv pip install -e ".[dev,test,docs]"
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Testing
+```bash
+# Run full test suite
+python -m pytest
+
+# Run with coverage
+python -m pytest --cov=mkdocs_output_as_input --cov-report=term-missing
+
+# Run specific test
+python -m pytest tests/test_plugin.py::test_plugin_default_config -v
+```
+
+### Code Quality
+```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+
+# Individual tools
+python -m ruff check src tests
+python -m ruff format src tests
+python -m mypy src
+```
+
+### Documentation
+```bash
+# Serve documentation locally
+mkdocs serve
+
+# Build documentation
+mkdocs build
+```
+
+## Architecture & Key Components
+
+### Plugin Structure
+The plugin is implemented in `src/mkdocs_output_as_input/plugin.py` with:
+- `OutputAsInputPlugin` class extending `mkdocs.plugins.BasePlugin`
+- Configuration schema with options: `stage_dir`, `html_element`, `target_tag`, `verbose`
+- Two main hooks:
+  - `on_page_read_source`: Captures source files and frontmatter during MkDocs processing
+  - `on_post_build`: Post-processes HTML and creates cousin files after build
+
+### Plugin Configuration
+In `mkdocs.yml`:
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory (default: "stage")
+      html_element: main        # HTML element to extract (default: "main")
+      target_tag: article       # Tag to wrap content (default: "article")
+      verbose: true            # Enable debug logging
+```
+
+### Key Implementation Details
+- Uses BeautifulSoup4 for HTML parsing and extraction
+- Preserves YAML frontmatter from source Markdown files
+- Creates output files with pattern: `{stage_dir}/{original_path}.md`
+- Handles edge cases: missing HTML elements, parsing errors, file I/O issues
+
+## Testing Guidelines
+
+The test suite in `tests/test_plugin.py` covers:
+- Default configuration behavior
+- Custom configuration options
+- Frontmatter preservation
+- HTML extraction with different selectors
+- Error handling scenarios
+- Verbose logging output
+
+When adding features:
+1. Write tests first following existing patterns
+2. Ensure >90% code coverage (CI enforces this)
+3. Test both success and error paths
+4. Use the provided fixtures (`plugin_instance`, `temp_docs_dir`)
+
+## Release Process
+
+The project uses GitHub Actions for automated releases:
+1. Update version in CHANGELOG.md following Keep a Changelog format
+2. Create a release on GitHub with tag `v{version}`
+3. CI automatically publishes to PyPI using trusted publishing
+
+## Common Development Tasks
+
+### Adding a New Configuration Option
+1. Add to `config_scheme` in `plugin.py`
+2. Update `__init__` method to use the option
+3. Implement logic in relevant hook methods
+4. Add tests for the new option
+5. Update documentation in README.md and docs/
+
+### Debugging Plugin Behavior
+1. Enable verbose mode in mkdocs.yml
+2. Use `logger.debug()` statements (already configured with loguru)
+3. Run MkDocs with: `mkdocs build -v`
+4. Check the stage directory for output files
+
+### Working with MkDocs Events
+The plugin uses MkDocs event hooks. Key references:
+- [MkDocs Plugin Development](https://www.mkdocs.org/dev-guide/plugins/)
+- [Available Events](https://www.mkdocs.org/dev-guide/plugins/#events)
+- Current hooks: `on_page_read_source`, `on_post_build`
+
+## Project-Specific Notes
+
+- The plugin must handle various MkDocs themes gracefully
+- Output files should be valid Markdown with proper YAML frontmatter
+- The stage directory is created automatically if it doesn't exist
+- BeautifulSoup parser uses 'html.parser' for consistency across platforms
+</document_content>
+</document>
+
+<document index="5">
+<source>CHANGELOG.md</source>
+<document_content>
+# Changelog
+
+All notable changes to vexy-mkdocs-output-as-input will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.2.0] - 2025-01-14
+
+### Changed
+- **BREAKING**: Migrated to src-layout package structure
+- **BREAKING**: Minimum Python version is now 3.9
+- Switched from Loguru to standard library logging for better integration
+- Modernized packaging with PEP 621 compliant pyproject.toml
+- Improved type hints throughout the codebase
+
+### Added
+- Comprehensive test suite with >90% coverage
+- Pre-commit hooks for code quality
+- GitHub Actions CI/CD workflows
+- Support for Python 3.9, 3.10, 3.11, and 3.12
+- Automated release process with trusted PyPI publishing
+- Development documentation in README
+
+### Fixed
+- Better error handling for missing files
+- Graceful handling of invalid YAML frontmatter
+- Improved logging messages for debugging
+
+## [0.1.0] - 2025-01-10
+
+### Added
+- Initial release of vexy-mkdocs-output-as-input plugin
+- Core functionality to capture HTML output and create cousin Markdown files
+- Configurable stage directory for output files
+- Configurable HTML element extraction (default: `<main>`)
+- Configurable target tag transformation (default: `<article>`)
+- Preservation of original YAML frontmatter
+- Verbose logging mode for debugging
+- Basic documentation and examples
+
+[Unreleased]: https://github.com/vexyart/vexy-mkdocs-output-as-input/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/vexyart/vexy-mkdocs-output-as-input/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/vexyart/vexy-mkdocs-output-as-input/releases/tag/v0.1.0
+</document_content>
+</document>
+
+<document index="6">
+<source>CLAUDE.md</source>
+<document_content>
+
+# `https://github.com/vexyart/vexy-mkdocs-output-as-input`
+
+## Project Overview
+
+This is an MkDocs plugin called `vexy-mkdocs-output-as-input` that captures rendered HTML output from MkDocs and creates "cousin" Markdown files containing the original YAML frontmatter plus the extracted HTML content. This enables post-processing workflows with other static site generators.
+
+## Development Commands
+
+### Setup & Installation
+```bash
+# Install development dependencies
+uv pip install -e ".[dev,test,docs]"
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Testing
+```bash
+# Run full test suite
+python -m pytest
+
+# Run with coverage
+python -m pytest --cov=mkdocs_output_as_input --cov-report=term-missing
+
+# Run specific test
+python -m pytest tests/test_plugin.py::test_plugin_default_config -v
+```
+
+### Code Quality
+```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+
+# Individual tools
+python -m ruff check src tests
+python -m ruff format src tests
+python -m mypy src
+```
+
+### Documentation
+```bash
+# Serve documentation locally
+mkdocs serve
+
+# Build documentation
+mkdocs build
+```
+
+## Architecture & Key Components
+
+### Plugin Structure
+The plugin is implemented in `src/mkdocs_output_as_input/plugin.py` with:
+- `OutputAsInputPlugin` class extending `mkdocs.plugins.BasePlugin`
+- Configuration schema with options: `stage_dir`, `html_element`, `target_tag`, `verbose`
+- Two main hooks:
+  - `on_page_read_source`: Captures source files and frontmatter during MkDocs processing
+  - `on_post_build`: Post-processes HTML and creates cousin files after build
+
+### Plugin Configuration
+In `mkdocs.yml`:
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory (default: "stage")
+      html_element: main        # HTML element to extract (default: "main")
+      target_tag: article       # Tag to wrap content (default: "article")
+      verbose: true            # Enable debug logging
+```
+
+### Key Implementation Details
+- Uses BeautifulSoup4 for HTML parsing and extraction
+- Preserves YAML frontmatter from source Markdown files
+- Creates output files with pattern: `{stage_dir}/{original_path}.md`
+- Handles edge cases: missing HTML elements, parsing errors, file I/O issues
+
+## Testing Guidelines
+
+The test suite in `tests/test_plugin.py` covers:
+- Default configuration behavior
+- Custom configuration options
+- Frontmatter preservation
+- HTML extraction with different selectors
+- Error handling scenarios
+- Verbose logging output
+
+When adding features:
+1. Write tests first following existing patterns
+2. Ensure >90% code coverage (CI enforces this)
+3. Test both success and error paths
+4. Use the provided fixtures (`plugin_instance`, `temp_docs_dir`)
+
+## Release Process
+
+The project uses GitHub Actions for automated releases:
+1. Update version in CHANGELOG.md following Keep a Changelog format
+2. Create a release on GitHub with tag `v{version}`
+3. CI automatically publishes to PyPI using trusted publishing
+
+## Common Development Tasks
+
+### Adding a New Configuration Option
+1. Add to `config_scheme` in `plugin.py`
+2. Update `__init__` method to use the option
+3. Implement logic in relevant hook methods
+4. Add tests for the new option
+5. Update documentation in README.md and docs/
+
+### Debugging Plugin Behavior
+1. Enable verbose mode in mkdocs.yml
+2. Use `logger.debug()` statements (already configured with loguru)
+3. Run MkDocs with: `mkdocs build -v`
+4. Check the stage directory for output files
+
+### Working with MkDocs Events
+The plugin uses MkDocs event hooks. Key references:
+- [MkDocs Plugin Development](https://www.mkdocs.org/dev-guide/plugins/)
+- [Available Events](https://www.mkdocs.org/dev-guide/plugins/#events)
+- Current hooks: `on_page_read_source`, `on_post_build`
+
+## Project-Specific Notes
+
+- The plugin must handle various MkDocs themes gracefully
+- Output files should be valid Markdown with proper YAML frontmatter
+- The stage directory is created automatically if it doesn't exist
+- BeautifulSoup parser uses 'html.parser' for consistency across platforms
+</document_content>
+</document>
+
+<document index="7">
+<source>GEMINI.md</source>
+<document_content>
+
+# `https://github.com/vexyart/vexy-mkdocs-output-as-input`
+
+## Project Overview
+
+This is an MkDocs plugin called `vexy-mkdocs-output-as-input` that captures rendered HTML output from MkDocs and creates "cousin" Markdown files containing the original YAML frontmatter plus the extracted HTML content. This enables post-processing workflows with other static site generators.
+
+## Development Commands
+
+### Setup & Installation
+```bash
+# Install development dependencies
+uv pip install -e ".[dev,test,docs]"
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Testing
+```bash
+# Run full test suite
+python -m pytest
+
+# Run with coverage
+python -m pytest --cov=mkdocs_output_as_input --cov-report=term-missing
+
+# Run specific test
+python -m pytest tests/test_plugin.py::test_plugin_default_config -v
+```
+
+### Code Quality
+```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+
+# Individual tools
+python -m ruff check src tests
+python -m ruff format src tests
+python -m mypy src
+```
+
+### Documentation
+```bash
+# Serve documentation locally
+mkdocs serve
+
+# Build documentation
+mkdocs build
+```
+
+## Architecture & Key Components
+
+### Plugin Structure
+The plugin is implemented in `src/mkdocs_output_as_input/plugin.py` with:
+- `OutputAsInputPlugin` class extending `mkdocs.plugins.BasePlugin`
+- Configuration schema with options: `stage_dir`, `html_element`, `target_tag`, `verbose`
+- Two main hooks:
+  - `on_page_read_source`: Captures source files and frontmatter during MkDocs processing
+  - `on_post_build`: Post-processes HTML and creates cousin files after build
+
+### Plugin Configuration
+In `mkdocs.yml`:
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory (default: "stage")
+      html_element: main        # HTML element to extract (default: "main")
+      target_tag: article       # Tag to wrap content (default: "article")
+      verbose: true            # Enable debug logging
+```
+
+### Key Implementation Details
+- Uses BeautifulSoup4 for HTML parsing and extraction
+- Preserves YAML frontmatter from source Markdown files
+- Creates output files with pattern: `{stage_dir}/{original_path}.md`
+- Handles edge cases: missing HTML elements, parsing errors, file I/O issues
+
+## Testing Guidelines
+
+The test suite in `tests/test_plugin.py` covers:
+- Default configuration behavior
+- Custom configuration options
+- Frontmatter preservation
+- HTML extraction with different selectors
+- Error handling scenarios
+- Verbose logging output
+
+When adding features:
+1. Write tests first following existing patterns
+2. Ensure >90% code coverage (CI enforces this)
+3. Test both success and error paths
+4. Use the provided fixtures (`plugin_instance`, `temp_docs_dir`)
+
+## Release Process
+
+The project uses GitHub Actions for automated releases:
+1. Update version in CHANGELOG.md following Keep a Changelog format
+2. Create a release on GitHub with tag `v{version}`
+3. CI automatically publishes to PyPI using trusted publishing
+
+## Common Development Tasks
+
+### Adding a New Configuration Option
+1. Add to `config_scheme` in `plugin.py`
+2. Update `__init__` method to use the option
+3. Implement logic in relevant hook methods
+4. Add tests for the new option
+5. Update documentation in README.md and docs/
+
+### Debugging Plugin Behavior
+1. Enable verbose mode in mkdocs.yml
+2. Use `logger.debug()` statements (already configured with loguru)
+3. Run MkDocs with: `mkdocs build -v`
+4. Check the stage directory for output files
+
+### Working with MkDocs Events
+The plugin uses MkDocs event hooks. Key references:
+- [MkDocs Plugin Development](https://www.mkdocs.org/dev-guide/plugins/)
+- [Available Events](https://www.mkdocs.org/dev-guide/plugins/#events)
+- Current hooks: `on_page_read_source`, `on_post_build`
+
+## Project-Specific Notes
+
+- The plugin must handle various MkDocs themes gracefully
+- Output files should be valid Markdown with proper YAML frontmatter
+- The stage directory is created automatically if it doesn't exist
+- BeautifulSoup parser uses 'html.parser' for consistency across platforms
+</document_content>
+</document>
+
+<document index="8">
+<source>LICENSE</source>
+<document_content>
+MIT License
+
+Copyright (c) 2025 MkDocs Output as Input Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</document_content>
+</document>
+
+<document index="9">
+<source>README.md</source>
+<document_content>
+# vexy-mkdocs-output-as-input
+
+[![PyPI version](https://badge.fury.io/py/vexy-mkdocs-output-as-input.svg)](https://pypi.org/project/vexy-mkdocs-output-as-input/)
+[![CI](https://github.com/vexyart/vexy-mkdocs-output-as-input/workflows/CI/badge.svg)](https://github.com/vexyart/vexy-mkdocs-output-as-input/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/vexyart/vexy-mkdocs-output-as-input/branch/main/graph/badge.svg)](https://codecov.io/gh/vexyart/vexy-mkdocs-output-as-input)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python versions](https://img.shields.io/pypi/pyversions/vexy-mkdocs-output-as-input.svg)](https://pypi.org/project/vexy-mkdocs-output-as-input/)
+
+A MkDocs plugin that captures HTML output and creates "cousin" Markdown files with original frontmatter and extracted HTML content.
+
+## Features
+
+This plugin enables powerful post-processing workflows by:
+
+1. ✅ Preserving your original Markdown structure and frontmatter
+2. ✅ Capturing the fully-rendered HTML output from MkDocs
+3. ✅ Creating new Markdown files that combine original metadata with processed HTML
+4. ✅ Enabling further processing by other static site generators
+
+## Installation
+
+Install from PyPI:
+
+```bash
+uv pip install --system --upgrade vexy-mkdocs-output-as-input
+```
+
+Or install from source:
+
+```bash
+pip install git+https://github.com/vexyart/vexy-mkdocs-output-as-input
+```
+
+## Quick Start
+
+Add the plugin to your `mkdocs.yml`:
+
+```yaml
+plugins:
+  - search  # Other plugins
+  - output-as-input
+```
+
+Build your site:
+
+```bash
+mkdocs build
+```
+
+Find your processed files in the `stage/` directory (relative to your MkDocs project root).
+
+## Configuration
+
+All configuration options with their defaults:
+
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory name (default: 'stage')
+      html_element: main        # HTML element to extract (default: 'main')
+      target_tag: article       # Tag to use in output (default: 'article')
+      verbose: false            # Enable verbose logging (default: false)
+```
+
+### Options Explained
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `stage_dir` | string | `"stage"` | Directory name for output files (relative to project root) |
+| `html_element` | string | `"main"` | CSS selector for the HTML element to extract |
+| `target_tag` | string | `"article"` | HTML tag to use in the output (replaces extracted element's tag) |
+| `verbose` | boolean | `false` | Enable detailed logging for debugging |
+
+## How It Works
+
+### Input → Process → Output
+
+1. **Input**: Your source Markdown with frontmatter
+   ```markdown
+   ---
+   title: My Page
+   author: Jane Doe
+   ---
+   
+   # My Page
+   
+   This is my content with **markdown**.
+   ```
+
+2. **MkDocs Processing**: Renders to HTML as usual
+   ```html
+   <main class="md-content">
+     <h1>My Page</h1>
+     <p>This is my content with <strong>markdown</strong>.</p>
+   </main>
+   ```
+
+3. **Output**: Cousin file with preserved frontmatter + extracted HTML
+   ```markdown
+   ---
+   title: My Page
+   author: Jane Doe
+   ---
+   
+   <article class="md-content">
+     <h1>My Page</h1>
+     <p>This is my content with <strong>markdown</strong>.</p>
+   </article>
+   ```
+
+## Use Cases
+
+### 🔄 Multi-Stage Documentation Pipeline
+
+Process documentation through MkDocs first, then feed to another SSG:
+
+```yaml
+# mkdocs.yml
+plugins:
+  - output-as-input:
+      stage_dir: hugo/content
+
+# Then run:
+# mkdocs build && hugo build
+```
+
+### 📝 Content Extraction
+
+Extract just the article content without theme wrapper:
+
+```yaml
+plugins:
+  - output-as-input:
+      html_element: article
+      target_tag: div
+```
+
+### 🎨 Custom Post-Processing
+
+Preserve MkDocs rendering while preparing for custom templates:
+
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: _includes
+      html_element: main
+      target_tag: section
+```
+
+## Examples
+
+### Basic Example
+
+```yaml
+# mkdocs.yml
+site_name: My Documentation
+plugins:
+  - output-as-input
+```
+
+### Advanced Example
+
+```yaml
+# mkdocs.yml
+site_name: My Documentation
+theme:
+  name: material
+
+plugins:
+  - search
+  - output-as-input:
+      stage_dir: processed
+      html_element: article.md-content__inner
+      target_tag: main
+      verbose: true
+
+# Process specific content area from Material theme
+```
+
+### Integration Example
+
+Using with other tools in a documentation pipeline:
+
+```bash
+#!/bin/bash
+# build.sh
+
+# Stage 1: Build with MkDocs + plugins
+mkdocs build
+
+# Stage 2: Process staged output
+python post_process.py stage/
+
+# Stage 3: Build final site
+hugo --contentDir=stage/
+```
+
+## Development
+
+### Setup Development Environment
+
+```bash
+# Clone the repository
+git clone https://github.com/vexyart/vexy-mkdocs-output-as-input
+cd vexy-mkdocs-output-as-input
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install in development mode
+pip install -e .[dev]
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=mkdocs_output_as_input --cov-report=html
+
+# Run specific test
+pytest tests/test_plugin.py::TestOutputAsInputPlugin::test_default_config
+```
+
+### Code Quality
+
+```bash
+# Format code
+black src tests
+
+# Lint code
+ruff check src tests
+
+# Type check
+mypy src
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- 📧 Email: you@example.com
+- 🐛 Issues: [GitHub Issues](https://github.com/vexyart/vexy-mkdocs-output-as-input/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/vexyart/vexy-mkdocs-output-as-input/discussions)
+</document_content>
+</document>
+
+<document index="10">
+<source>TODO.md</source>
+<document_content>
+# TODO
+
+## High Priority
+
+- [ ] Fix broken plugin.py - methods are missing implementation and have syntax errors
+- [ ] Fix broken test_plugin.py - methods are missing implementation
+
+## Medium Priority
+
+- [ ] Add missing documentation pages referenced in mkdocs.yml nav
+- [ ] Add pre-commit configuration file
+- [ ] Ensure git-tag-based VCS versioning with hatch is working
+- [ ] Improve error handling and logging throughout plugin
+
+## Low Priority
+
+- [ ] Update CI workflow to use ruff format instead of black
+- [ ] Add integration tests for real MkDocs builds
+
+</document_content>
+</document>
+
+<document index="11">
+<source>docs/configuration.md</source>
+<document_content>
+---
+title: Configuration
+description: Complete configuration reference for the MkDocs Output as Input plugin
+---
+
+# Configuration
+
+The MkDocs Output as Input plugin provides several configuration options to customize its behavior.
+
+## Basic Configuration
+
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory (default: 'stage')
+      html_element: main        # HTML element to extract (default: 'main')
+      target_tag: article       # Tag to use in output (default: 'article')
+      verbose: false           # Enable verbose logging (default: false)
+```
+
+## Configuration Options
+
+### `stage_dir`
+
+- **Type**: `string`
+- **Default**: `"stage"`
+- **Description**: Directory name for output files, relative to your project root
+
+**Example**:
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: processed
+```
+
+This creates cousin files in a `processed/` directory instead of `stage/`.
+
+### `html_element`
+
+- **Type**: `string`
+- **Default**: `"main"`
+- **Description**: CSS selector for the HTML element to extract from the built pages
+
+**Common values**:
+- `"main"` - Extract the main content area
+- `"article"` - Extract article elements
+- `"div.content"` - Extract divs with class "content"
+- `"#content"` - Extract element with id "content"
+
+**Example**:
+```yaml
+plugins:
+  - output-as-input:
+      html_element: article.post-content
+```
+
+### `target_tag`
+
+- **Type**: `string`
+- **Default**: `"article"`
+- **Description**: HTML tag to use in the output file (replaces the extracted element's tag)
+
+**Example**:
+```yaml
+plugins:
+  - output-as-input:
+      html_element: main
+      target_tag: section
+```
+
+This extracts `<main>` elements and converts them to `<section>` in the output.
+
+### `verbose`
+
+- **Type**: `boolean`
+- **Default**: `false`
+- **Description**: Enable detailed logging for debugging
+
+**Example**:
+```yaml
+plugins:
+  - output-as-input:
+      verbose: true
+```
+
+## Configuration Examples
+
+### Material Theme
+
+For the Material theme, you might want to extract the inner content:
+
+```yaml
+plugins:
+  - output-as-input:
+      html_element: article.md-content__inner
+      target_tag: div
+```
+
+### Custom Output Directory
+
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: hugo/content
+      html_element: main
+      target_tag: article
+```
+
+### Debug Mode
+
+```yaml
+plugins:
+  - output-as-input:
+      verbose: true
+```
+
+## Advanced Usage
+
+### Multiple Processing Steps
+
+You can use the plugin in a multi-step build process:
+
+1. **MkDocs build** with output-as-input plugin
+2. **Custom processing** of the stage directory
+3. **Secondary build** with another static site generator
+
+```bash
+#!/bin/bash
+# Build with MkDocs
+mkdocs build
+
+# Post-process the staged files
+python process_stage.py
+
+# Build with Hugo
+hugo --contentDir=stage/
+```
+
+### Theme Compatibility
+
+The plugin should work with any MkDocs theme. For best results:
+
+1. Inspect your theme's HTML structure
+2. Identify the main content element
+3. Configure `html_element` accordingly
+
+**Finding the right element**:
+1. Build your site normally
+2. Open a page in your browser
+3. Use developer tools to inspect the HTML
+4. Look for the element containing your content
+
+## Troubleshooting
+
+### No Output Files
+
+If no cousin files are created:
+
+1. Enable verbose mode
+2. Check that HTML files exist in the site directory
+3. Verify that the `html_element` selector matches your theme
+
+### Empty Output Files
+
+If cousin files are empty:
+
+1. Check that the `html_element` selector is correct
+2. Verify that the element exists in your HTML output
+3. Try a more general selector like `"body"` for testing
+
+### Permission Errors
+
+If you get permission errors:
+
+1. Ensure the project directory is writable
+2. Try a different `stage_dir` location
+3. Check file system permissions
+
+</document_content>
+</document>
+
+<document index="12">
+<source>docs/getting-started.md</source>
+<document_content>
+---
+title: Getting Started
+description: Quick start guide for the MkDocs Output as Input plugin
+---
+
+# Getting Started
+
+This guide will help you get up and running with the MkDocs Output as Input plugin.
+
+## Installation
+
+### From PyPI
+
+```bash
+pip install vexy-mkdocs-output-as-input
+```
+
+### From Source
+
+```bash
+git clone https://github.com/vexyart/vexy-mkdocs-output-as-input
+cd vexy-mkdocs-output-as-input
+pip install -e .
+```
+
+## Basic Configuration
+
+Add the plugin to your `mkdocs.yml` file:
+
+```yaml
+plugins:
+  - search  # Keep your existing plugins
+  - output-as-input
+```
+
+## Your First Build
+
+1. **Create a simple Markdown file** with frontmatter:
+
+   ```markdown
+   ---
+   title: My First Page
+   author: Your Name
+   date: 2025-01-14
+   ---
+   
+   # My First Page
+   
+   This is some **markdown** content.
+   ```
+
+2. **Run MkDocs build**:
+
+   ```bash
+   mkdocs build
+   ```
+
+3. **Check the stage directory**:
+
+   ```bash
+   ls stage/
+   ```
+
+   You should see a cousin file with the same name as your source file.
+
+## Verifying the Output
+
+The cousin file will contain:
+
+- **Original frontmatter** preserved exactly
+- **Processed HTML content** extracted from the built site
+- **Configurable HTML tag** wrapping the content
+
+## Next Steps
+
+- Learn about [configuration options](configuration.md)
+- Explore [usage examples](examples.md)
+- Check the [API reference](api.md)
+
+## Troubleshooting
+
+### Plugin Not Found
+
+If you get an error about the plugin not being found:
+
+```bash
+pip install vexy-mkdocs-output-as-input
+```
+
+### No Output Files
+
+Enable verbose mode to see what's happening:
+
+```yaml
+plugins:
+  - output-as-input:
+      verbose: true
+```
+
+### Permission Errors
+
+Make sure you have write permissions in your project directory, or specify a different output directory:
+
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: /path/to/writable/directory
+```
+
+</document_content>
+</document>
+
+<document index="13">
+<source>docs/index.md</source>
+<document_content>
+---
+title: MkDocs Output as Input
+description: Capture HTML output and create cousin Markdown files
+---
+
+# MkDocs Output as Input Plugin
+
+Welcome to the documentation for the MkDocs Output as Input plugin! This plugin enables powerful post-processing workflows by capturing MkDocs HTML output and creating new Markdown files that preserve your original frontmatter.
+
+## What does it do?
+
+This plugin creates a bridge between MkDocs and other static site generators or processing pipelines:
+
+```mermaid
+graph LR
+    A[Source Markdown<br/>with Frontmatter] --> B[MkDocs Build]
+    B --> C[HTML Output]
+    C --> D[Plugin Extracts<br/>Content]
+    D --> E[Cousin Markdown<br/>with HTML + Frontmatter]
+    E --> F[Further Processing]
+```
+
+## Quick Example
+
+=== "Input (source.md)"
+
+    ```markdown
+    ---
+    title: My Article
+    date: 2025-01-14
+    tags: [tutorial, mkdocs]
+    ---
+    
+    # My Article
+    
+    This is my content with **Markdown** formatting.
+    ```
+
+=== "Output (stage/source.md)"
+
+    ```markdown
+    ---
+    title: My Article
+    date: 2025-01-14
+    tags: [tutorial, mkdocs]
+    ---
+    
+    <article class="md-content">
+      <h1>My Article</h1>
+      <p>This is my content with <strong>Markdown</strong> formatting.</p>
+    </article>
+    ```
+
+## Key Features
+
+- 🎯 **Preserves Frontmatter**: All your YAML metadata is maintained
+- 🔍 **Selective Extraction**: Choose which HTML element to extract
+- 🏷️ **Tag Transformation**: Convert extracted elements to different tags
+- 📁 **Flexible Output**: Configure where cousin files are created
+- 🐛 **Debug Support**: Verbose logging for troubleshooting
+
+## Installation
+
+```bash
+pip install vexy-mkdocs-output-as-input
+```
+
+Then add to your `mkdocs.yml`:
+
+```yaml
+plugins:
+  - output-as-input
+```
+
+## Next Steps
+
+- [Getting Started](getting-started.md) - Set up your first configuration
+- [Configuration](configuration.md) - Explore all options
+- [Examples](examples.md) - See real-world use cases
+- [API Reference](api.md) - Detailed plugin documentation
+</document_content>
+</document>
+
+<document index="14">
+<source>llms.txt</source>
+<document_content>
+Project Structure:
+📁 vexy-mkdocs-output-as-input
+├── 📁 .github
+│   └── 📁 workflows
+│       ├── 📄 ci.yml
+│       └── 📄 release.yml
+├── 📁 docs
+│   └── 📄 index.md
+├── 📁 src
+│   └── 📁 mkdocs_output_as_input
+│       ├── 📄 __init__.py
+│       └── 📄 plugin.py
+├── 📁 tests
+│   └── 📄 test_plugin.py
+├── 📄 .gitignore
+├── 📄 AGENTS.md
+├── 📄 CHANGELOG.md
+├── 📄 CLAUDE.md
+├── 📄 GEMINI.md
+├── 📄 LICENSE
+├── 📄 mkdocs.yml
+├── 📄 pyproject.toml
+├── 📄 README.md
+└── 📄 TODO.md
+
+
+<documents>
+<document index="1">
+<source>.github/workflows/ci.yml</source>
+<document_content>
+# this_file: more/mkdocs-output-as-input-refactored/.github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for setuptools-scm
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Run pre-commit
+        if: matrix.python-version == '3.11'
+        run: pre-commit run --all-files
+
+      - name: Run tests
+        run: |
+          pytest -v --cov=mkdocs_output_as_input --cov-report=xml --cov-report=term
+
+      - name: Upload coverage
+        if: matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Run ruff
+        run: ruff check --output-format=github .
+
+      - name: Run black
+        run: black --check --diff .
+
+      - name: Run mypy
+        run: mypy src
+</document_content>
+</document>
+
+<document index="2">
+<source>.github/workflows/release.yml</source>
+<document_content>
+# this_file: more/mkdocs-output-as-input-refactored/.github/workflows/release.yml
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write  # Required for PyPI trusted publishing
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for setuptools-scm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Check package
+        run: twine check dist/*
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish-pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mkdocs-output-as-input
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # Trusted publishing configured in PyPI project settings
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Extract changelog section
+        id: changelog
+        run: |
+          version=${GITHUB_REF#refs/tags/v}
+          awk "/## \[$version\]/{flag=1; next} /## \[/{flag=0} flag" CHANGELOG.md > release_notes.md
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.changelog.outputs.version }}
+          body_path: release_notes.md
+          files: dist/*
+          draft: false
+          prerelease: false
+</document_content>
+</document>
+
+<document index="3">
+<source>.gitignore</source>
+<document_content>
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+.env
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# Poetry
+poetry.lock
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# MkDocs
+site/
+stage/
+.cache/
+
+# setuptools-scm
+src/mkdocs_output_as_input/_version.py
+</document_content>
+</document>
+
+<document index="4">
+<source>AGENTS.md</source>
+<document_content>
+
+# `https://github.com/vexyart/vexy-mkdocs-output-as-input`
+
+## Project Overview
+
+This is an MkDocs plugin called `vexy-mkdocs-output-as-input` that captures rendered HTML output from MkDocs and creates "cousin" Markdown files containing the original YAML frontmatter plus the extracted HTML content. This enables post-processing workflows with other static site generators.
+
+## Development Commands
+
+### Setup & Installation
+```bash
+# Install development dependencies
+uv pip install -e ".[dev,test,docs]"
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Testing
+```bash
+# Run full test suite
+python -m pytest
+
+# Run with coverage
+python -m pytest --cov=mkdocs_output_as_input --cov-report=term-missing
+
+# Run specific test
+python -m pytest tests/test_plugin.py::test_plugin_default_config -v
+```
+
+### Code Quality
+```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+
+# Individual tools
+python -m ruff check src tests
+python -m ruff format src tests
+python -m mypy src
+```
+
+### Documentation
+```bash
+# Serve documentation locally
+mkdocs serve
+
+# Build documentation
+mkdocs build
+```
+
+## Architecture & Key Components
+
+### Plugin Structure
+The plugin is implemented in `src/mkdocs_output_as_input/plugin.py` with:
+- `OutputAsInputPlugin` class extending `mkdocs.plugins.BasePlugin`
+- Configuration schema with options: `stage_dir`, `html_element`, `target_tag`, `verbose`
+- Two main hooks:
+  - `on_page_read_source`: Captures source files and frontmatter during MkDocs processing
+  - `on_post_build`: Post-processes HTML and creates cousin files after build
+
+### Plugin Configuration
+In `mkdocs.yml`:
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory (default: "stage")
+      html_element: main        # HTML element to extract (default: "main")
+      target_tag: article       # Tag to wrap content (default: "article")
+      verbose: true            # Enable debug logging
+```
+
+### Key Implementation Details
+- Uses BeautifulSoup4 for HTML parsing and extraction
+- Preserves YAML frontmatter from source Markdown files
+- Creates output files with pattern: `{stage_dir}/{original_path}.md`
+- Handles edge cases: missing HTML elements, parsing errors, file I/O issues
+
+## Testing Guidelines
+
+The test suite in `tests/test_plugin.py` covers:
+- Default configuration behavior
+- Custom configuration options
+- Frontmatter preservation
+- HTML extraction with different selectors
+- Error handling scenarios
+- Verbose logging output
+
+When adding features:
+1. Write tests first following existing patterns
+2. Ensure >90% code coverage (CI enforces this)
+3. Test both success and error paths
+4. Use the provided fixtures (`plugin_instance`, `temp_docs_dir`)
+
+## Release Process
+
+The project uses GitHub Actions for automated releases:
+1. Update version in CHANGELOG.md following Keep a Changelog format
+2. Create a release on GitHub with tag `v{version}`
+3. CI automatically publishes to PyPI using trusted publishing
+
+## Common Development Tasks
+
+### Adding a New Configuration Option
+1. Add to `config_scheme` in `plugin.py`
+2. Update `__init__` method to use the option
+3. Implement logic in relevant hook methods
+4. Add tests for the new option
+5. Update documentation in README.md and docs/
+
+### Debugging Plugin Behavior
+1. Enable verbose mode in mkdocs.yml
+2. Use `logger.debug()` statements (already configured with loguru)
+3. Run MkDocs with: `mkdocs build -v`
+4. Check the stage directory for output files
+
+### Working with MkDocs Events
+The plugin uses MkDocs event hooks. Key references:
+- [MkDocs Plugin Development](https://www.mkdocs.org/dev-guide/plugins/)
+- [Available Events](https://www.mkdocs.org/dev-guide/plugins/#events)
+- Current hooks: `on_page_read_source`, `on_post_build`
+
+## Project-Specific Notes
+
+- The plugin must handle various MkDocs themes gracefully
+- Output files should be valid Markdown with proper YAML frontmatter
+- The stage directory is created automatically if it doesn't exist
+- BeautifulSoup parser uses 'html.parser' for consistency across platforms
+</document_content>
+</document>
+
+<document index="5">
+<source>CHANGELOG.md</source>
+<document_content>
+# Changelog
+
+All notable changes to vexy-mkdocs-output-as-input will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.2.0] - 2025-01-14
+
+### Changed
+- **BREAKING**: Migrated to src-layout package structure
+- **BREAKING**: Minimum Python version is now 3.9
+- Switched from Loguru to standard library logging for better integration
+- Modernized packaging with PEP 621 compliant pyproject.toml
+- Improved type hints throughout the codebase
+
+### Added
+- Comprehensive test suite with >90% coverage
+- Pre-commit hooks for code quality
+- GitHub Actions CI/CD workflows
+- Support for Python 3.9, 3.10, 3.11, and 3.12
+- Automated release process with trusted PyPI publishing
+- Development documentation in README
+
+### Fixed
+- Better error handling for missing files
+- Graceful handling of invalid YAML frontmatter
+- Improved logging messages for debugging
+
+## [0.1.0] - 2025-01-10
+
+### Added
+- Initial release of vexy-mkdocs-output-as-input plugin
+- Core functionality to capture HTML output and create cousin Markdown files
+- Configurable stage directory for output files
+- Configurable HTML element extraction (default: `<main>`)
+- Configurable target tag transformation (default: `<article>`)
+- Preservation of original YAML frontmatter
+- Verbose logging mode for debugging
+- Basic documentation and examples
+
+[Unreleased]: https://github.com/vexyart/vexy-mkdocs-output-as-input/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/vexyart/vexy-mkdocs-output-as-input/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/vexyart/vexy-mkdocs-output-as-input/releases/tag/v0.1.0
+</document_content>
+</document>
+
+<document index="6">
+<source>CLAUDE.md</source>
+<document_content>
+
+# `https://github.com/vexyart/vexy-mkdocs-output-as-input`
+
+## Project Overview
+
+This is an MkDocs plugin called `vexy-mkdocs-output-as-input` that captures rendered HTML output from MkDocs and creates "cousin" Markdown files containing the original YAML frontmatter plus the extracted HTML content. This enables post-processing workflows with other static site generators.
+
+## Development Commands
+
+### Setup & Installation
+```bash
+# Install development dependencies
+uv pip install -e ".[dev,test,docs]"
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Testing
+```bash
+# Run full test suite
+python -m pytest
+
+# Run with coverage
+python -m pytest --cov=mkdocs_output_as_input --cov-report=term-missing
+
+# Run specific test
+python -m pytest tests/test_plugin.py::test_plugin_default_config -v
+```
+
+### Code Quality
+```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+
+# Individual tools
+python -m ruff check src tests
+python -m ruff format src tests
+python -m mypy src
+```
+
+### Documentation
+```bash
+# Serve documentation locally
+mkdocs serve
+
+# Build documentation
+mkdocs build
+```
+
+## Architecture & Key Components
+
+### Plugin Structure
+The plugin is implemented in `src/mkdocs_output_as_input/plugin.py` with:
+- `OutputAsInputPlugin` class extending `mkdocs.plugins.BasePlugin`
+- Configuration schema with options: `stage_dir`, `html_element`, `target_tag`, `verbose`
+- Two main hooks:
+  - `on_page_read_source`: Captures source files and frontmatter during MkDocs processing
+  - `on_post_build`: Post-processes HTML and creates cousin files after build
+
+### Plugin Configuration
+In `mkdocs.yml`:
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory (default: "stage")
+      html_element: main        # HTML element to extract (default: "main")
+      target_tag: article       # Tag to wrap content (default: "article")
+      verbose: true            # Enable debug logging
+```
+
+### Key Implementation Details
+- Uses BeautifulSoup4 for HTML parsing and extraction
+- Preserves YAML frontmatter from source Markdown files
+- Creates output files with pattern: `{stage_dir}/{original_path}.md`
+- Handles edge cases: missing HTML elements, parsing errors, file I/O issues
+
+## Testing Guidelines
+
+The test suite in `tests/test_plugin.py` covers:
+- Default configuration behavior
+- Custom configuration options
+- Frontmatter preservation
+- HTML extraction with different selectors
+- Error handling scenarios
+- Verbose logging output
+
+When adding features:
+1. Write tests first following existing patterns
+2. Ensure >90% code coverage (CI enforces this)
+3. Test both success and error paths
+4. Use the provided fixtures (`plugin_instance`, `temp_docs_dir`)
+
+## Release Process
+
+The project uses GitHub Actions for automated releases:
+1. Update version in CHANGELOG.md following Keep a Changelog format
+2. Create a release on GitHub with tag `v{version}`
+3. CI automatically publishes to PyPI using trusted publishing
+
+## Common Development Tasks
+
+### Adding a New Configuration Option
+1. Add to `config_scheme` in `plugin.py`
+2. Update `__init__` method to use the option
+3. Implement logic in relevant hook methods
+4. Add tests for the new option
+5. Update documentation in README.md and docs/
+
+### Debugging Plugin Behavior
+1. Enable verbose mode in mkdocs.yml
+2. Use `logger.debug()` statements (already configured with loguru)
+3. Run MkDocs with: `mkdocs build -v`
+4. Check the stage directory for output files
+
+### Working with MkDocs Events
+The plugin uses MkDocs event hooks. Key references:
+- [MkDocs Plugin Development](https://www.mkdocs.org/dev-guide/plugins/)
+- [Available Events](https://www.mkdocs.org/dev-guide/plugins/#events)
+- Current hooks: `on_page_read_source`, `on_post_build`
+
+## Project-Specific Notes
+
+- The plugin must handle various MkDocs themes gracefully
+- Output files should be valid Markdown with proper YAML frontmatter
+- The stage directory is created automatically if it doesn't exist
+- BeautifulSoup parser uses 'html.parser' for consistency across platforms
+</document_content>
+</document>
+
+<document index="7">
+<source>GEMINI.md</source>
+<document_content>
+
+# `https://github.com/vexyart/vexy-mkdocs-output-as-input`
+
+## Project Overview
+
+This is an MkDocs plugin called `vexy-mkdocs-output-as-input` that captures rendered HTML output from MkDocs and creates "cousin" Markdown files containing the original YAML frontmatter plus the extracted HTML content. This enables post-processing workflows with other static site generators.
+
+## Development Commands
+
+### Setup & Installation
+```bash
+# Install development dependencies
+uv pip install -e ".[dev,test,docs]"
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Testing
+```bash
+# Run full test suite
+python -m pytest
+
+# Run with coverage
+python -m pytest --cov=mkdocs_output_as_input --cov-report=term-missing
+
+# Run specific test
+python -m pytest tests/test_plugin.py::test_plugin_default_config -v
+```
+
+### Code Quality
+```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+
+# Individual tools
+python -m ruff check src tests
+python -m ruff format src tests
+python -m mypy src
+```
+
+### Documentation
+```bash
+# Serve documentation locally
+mkdocs serve
+
+# Build documentation
+mkdocs build
+```
+
+## Architecture & Key Components
+
+### Plugin Structure
+The plugin is implemented in `src/mkdocs_output_as_input/plugin.py` with:
+- `OutputAsInputPlugin` class extending `mkdocs.plugins.BasePlugin`
+- Configuration schema with options: `stage_dir`, `html_element`, `target_tag`, `verbose`
+- Two main hooks:
+  - `on_page_read_source`: Captures source files and frontmatter during MkDocs processing
+  - `on_post_build`: Post-processes HTML and creates cousin files after build
+
+### Plugin Configuration
+In `mkdocs.yml`:
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory (default: "stage")
+      html_element: main        # HTML element to extract (default: "main")
+      target_tag: article       # Tag to wrap content (default: "article")
+      verbose: true            # Enable debug logging
+```
+
+### Key Implementation Details
+- Uses BeautifulSoup4 for HTML parsing and extraction
+- Preserves YAML frontmatter from source Markdown files
+- Creates output files with pattern: `{stage_dir}/{original_path}.md`
+- Handles edge cases: missing HTML elements, parsing errors, file I/O issues
+
+## Testing Guidelines
+
+The test suite in `tests/test_plugin.py` covers:
+- Default configuration behavior
+- Custom configuration options
+- Frontmatter preservation
+- HTML extraction with different selectors
+- Error handling scenarios
+- Verbose logging output
+
+When adding features:
+1. Write tests first following existing patterns
+2. Ensure >90% code coverage (CI enforces this)
+3. Test both success and error paths
+4. Use the provided fixtures (`plugin_instance`, `temp_docs_dir`)
+
+## Release Process
+
+The project uses GitHub Actions for automated releases:
+1. Update version in CHANGELOG.md following Keep a Changelog format
+2. Create a release on GitHub with tag `v{version}`
+3. CI automatically publishes to PyPI using trusted publishing
+
+## Common Development Tasks
+
+### Adding a New Configuration Option
+1. Add to `config_scheme` in `plugin.py`
+2. Update `__init__` method to use the option
+3. Implement logic in relevant hook methods
+4. Add tests for the new option
+5. Update documentation in README.md and docs/
+
+### Debugging Plugin Behavior
+1. Enable verbose mode in mkdocs.yml
+2. Use `logger.debug()` statements (already configured with loguru)
+3. Run MkDocs with: `mkdocs build -v`
+4. Check the stage directory for output files
+
+### Working with MkDocs Events
+The plugin uses MkDocs event hooks. Key references:
+- [MkDocs Plugin Development](https://www.mkdocs.org/dev-guide/plugins/)
+- [Available Events](https://www.mkdocs.org/dev-guide/plugins/#events)
+- Current hooks: `on_page_read_source`, `on_post_build`
+
+## Project-Specific Notes
+
+- The plugin must handle various MkDocs themes gracefully
+- Output files should be valid Markdown with proper YAML frontmatter
+- The stage directory is created automatically if it doesn't exist
+- BeautifulSoup parser uses 'html.parser' for consistency across platforms
+</document_content>
+</document>
+
+<document index="8">
+<source>LICENSE</source>
+<document_content>
+MIT License
+
+Copyright (c) 2025 MkDocs Output as Input Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</document_content>
+</document>
+
+<document index="9">
+<source>README.md</source>
+<document_content>
+# vexy-mkdocs-output-as-input
+
+[![PyPI version](https://badge.fury.io/py/vexy-mkdocs-output-as-input.svg)](https://pypi.org/project/vexy-mkdocs-output-as-input/)
+[![CI](https://github.com/vexyart/vexy-mkdocs-output-as-input/workflows/CI/badge.svg)](https://github.com/vexyart/vexy-mkdocs-output-as-input/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/vexyart/vexy-mkdocs-output-as-input/branch/main/graph/badge.svg)](https://codecov.io/gh/vexyart/vexy-mkdocs-output-as-input)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python versions](https://img.shields.io/pypi/pyversions/vexy-mkdocs-output-as-input.svg)](https://pypi.org/project/vexy-mkdocs-output-as-input/)
+
+A MkDocs plugin that captures HTML output and creates "cousin" Markdown files with original frontmatter and extracted HTML content.
+
+## Features
+
+This plugin enables powerful post-processing workflows by:
+
+1. ✅ Preserving your original Markdown structure and frontmatter
+2. ✅ Capturing the fully-rendered HTML output from MkDocs
+3. ✅ Creating new Markdown files that combine original metadata with processed HTML
+4. ✅ Enabling further processing by other static site generators
+
+## Installation
+
+Install from PyPI:
+
+```bash
+uv pip install --system --upgrade vexy-mkdocs-output-as-input
+```
+
+Or install from source:
+
+```bash
+pip install git+https://github.com/vexyart/vexy-mkdocs-output-as-input
+```
+
+## Quick Start
+
+Add the plugin to your `mkdocs.yml`:
+
+```yaml
+plugins:
+  - search  # Other plugins
+  - output-as-input
+```
+
+Build your site:
+
+```bash
+mkdocs build
+```
+
+Find your processed files in the `stage/` directory (relative to your MkDocs project root).
+
+## Configuration
+
+All configuration options with their defaults:
+
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: stage          # Output directory name (default: 'stage')
+      html_element: main        # HTML element to extract (default: 'main')
+      target_tag: article       # Tag to use in output (default: 'article')
+      verbose: false            # Enable verbose logging (default: false)
+```
+
+### Options Explained
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `stage_dir` | string | `"stage"` | Directory name for output files (relative to project root) |
+| `html_element` | string | `"main"` | CSS selector for the HTML element to extract |
+| `target_tag` | string | `"article"` | HTML tag to use in the output (replaces extracted element's tag) |
+| `verbose` | boolean | `false` | Enable detailed logging for debugging |
+
+## How It Works
+
+### Input → Process → Output
+
+1. **Input**: Your source Markdown with frontmatter
+   ```markdown
+   ---
+   title: My Page
+   author: Jane Doe
+   ---
+   
+   # My Page
+   
+   This is my content with **markdown**.
+   ```
+
+2. **MkDocs Processing**: Renders to HTML as usual
+   ```html
+   <main class="md-content">
+     <h1>My Page</h1>
+     <p>This is my content with <strong>markdown</strong>.</p>
+   </main>
+   ```
+
+3. **Output**: Cousin file with preserved frontmatter + extracted HTML
+   ```markdown
+   ---
+   title: My Page
+   author: Jane Doe
+   ---
+   
+   <article class="md-content">
+     <h1>My Page</h1>
+     <p>This is my content with <strong>markdown</strong>.</p>
+   </article>
+   ```
+
+## Use Cases
+
+### 🔄 Multi-Stage Documentation Pipeline
+
+Process documentation through MkDocs first, then feed to another SSG:
+
+```yaml
+# mkdocs.yml
+plugins:
+  - output-as-input:
+      stage_dir: hugo/content
+
+# Then run:
+# mkdocs build && hugo build
+```
+
+### 📝 Content Extraction
+
+Extract just the article content without theme wrapper:
+
+```yaml
+plugins:
+  - output-as-input:
+      html_element: article
+      target_tag: div
+```
+
+### 🎨 Custom Post-Processing
+
+Preserve MkDocs rendering while preparing for custom templates:
+
+```yaml
+plugins:
+  - output-as-input:
+      stage_dir: _includes
+      html_element: main
+      target_tag: section
+```
+
+## Examples
+
+### Basic Example
+
+```yaml
+# mkdocs.yml
+site_name: My Documentation
+plugins:
+  - output-as-input
+```
+
+### Advanced Example
+
+```yaml
+# mkdocs.yml
+site_name: My Documentation
+theme:
+  name: material
+
+plugins:
+  - search
+  - output-as-input:
+      stage_dir: processed
+      html_element: article.md-content__inner
+      target_tag: main
+      verbose: true
+
+# Process specific content area from Material theme
+```
+
+### Integration Example
+
+Using with other tools in a documentation pipeline:
+
+```bash
+#!/bin/bash
+# build.sh
+
+# Stage 1: Build with MkDocs + plugins
+mkdocs build
+
+# Stage 2: Process staged output
+python post_process.py stage/
+
+# Stage 3: Build final site
+hugo --contentDir=stage/
+```
+
+## Development
+
+### Setup Development Environment
+
+```bash
+# Clone the repository
+git clone https://github.com/vexyart/vexy-mkdocs-output-as-input
+cd vexy-mkdocs-output-as-input
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install in development mode
+pip install -e .[dev]
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=mkdocs_output_as_input --cov-report=html
+
+# Run specific test
+pytest tests/test_plugin.py::TestOutputAsInputPlugin::test_default_config
+```
+
+### Code Quality
+
+```bash
+# Format code
+black src tests
+
+# Lint code
+ruff check src tests
+
+# Type check
+mypy src
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- 📧 Email: you@example.com
+- 🐛 Issues: [GitHub Issues](https://github.com/vexyart/vexy-mkdocs-output-as-input/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/vexyart/vexy-mkdocs-output-as-input/discussions)
+</document_content>
+</document>
+
+<document index="10">
+<source>TODO.md</source>
+<document_content>
+# TODO
+
+
+</document_content>
+</document>
+
+<document index="11">
+<source>docs/index.md</source>
+<document_content>
+---
+title: MkDocs Output as Input
+description: Capture HTML output and create cousin Markdown files
+---
+
+# MkDocs Output as Input Plugin
+
+Welcome to the documentation for the MkDocs Output as Input plugin! This plugin enables powerful post-processing workflows by capturing MkDocs HTML output and creating new Markdown files that preserve your original frontmatter.
+
+## What does it do?
+
+This plugin creates a bridge between MkDocs and other static site generators or processing pipelines:
+
+```mermaid
+graph LR
+    A[Source Markdown<br/>with Frontmatter] --> B[MkDocs Build]
+    B --> C[HTML Output]
+    C --> D[Plugin Extracts<br/>Content]
+    D --> E[Cousin Markdown<br/>with HTML + Frontmatter]
+    E --> F[Further Processing]
+```
+
+## Quick Example
+
+=== "Input (source.md)"
+
+    ```markdown
+    ---
+    title: My Article
+    date: 2025-01-14
+    tags: [tutorial, mkdocs]
+    ---
+    
+    # My Article
+    
+    This is my content with **Markdown** formatting.
+    ```
+
+=== "Output (stage/source.md)"
+
+    ```markdown
+    ---
+    title: My Article
+    date: 2025-01-14
+    tags: [tutorial, mkdocs]
+    ---
+    
+    <article class="md-content">
+      <h1>My Article</h1>
+      <p>This is my content with <strong>Markdown</strong> formatting.</p>
+    </article>
+    ```
+
+## Key Features
+
+- 🎯 **Preserves Frontmatter**: All your YAML metadata is maintained
+- 🔍 **Selective Extraction**: Choose which HTML element to extract
+- 🏷️ **Tag Transformation**: Convert extracted elements to different tags
+- 📁 **Flexible Output**: Configure where cousin files are created
+- 🐛 **Debug Support**: Verbose logging for troubleshooting
+
+## Installation
+
+```bash
+pip install vexy-mkdocs-output-as-input
+```
+
+Then add to your `mkdocs.yml`:
+
+```yaml
+plugins:
+  - output-as-input
+```
+
+## Next Steps
+
+- [Getting Started](getting-started.md) - Set up your first configuration
+- [Configuration](configuration.md) - Explore all options
+- [Examples](examples.md) - See real-world use cases
+- [API Reference](api.md) - Detailed plugin documentation
+</document_content>
+</document>
+
+<document index="12">
+<source>mkdocs.yml</source>
+<document_content>
+---
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Configuration: configuration.md
+  - Examples: examples.md
+  - API Reference: api.md
+plugins:
+  - search
+  - output-as-input:
+      stage_dir: stage
+      verbose: true
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+repo_name: vexy-mkdocs-output-as-input
+repo_url: https://github.com/vexyart/vexy-mkdocs-output-as-input
+# this_file: more/vexy-mkdocs-output-as-input-refactored/mkdocs.yml
+site_name: MkDocs Output as Input Plugin
+site_url: https://vexyart.github.io/vexy-mkdocs-output-as-input/
+theme:
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  name: material
+  palette:
+    - accent: indigo
+      primary: indigo
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - accent: indigo
+      primary: indigo
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+</document_content>
+</document>
+
+<document index="13">
+<source>pyproject.toml</source>
+<document_content>
+# this_file: more/mkdocs-plugins/vexy-mkdocs-output-as-input/pyproject.toml
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vexy-mkdocs-output-as-input"
+dynamic = ["version"]
+description = "MkDocs plugin that captures HTML output and creates cousin Markdown files with original frontmatter"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Vexy Lines Team", email = "help@vexy.art"},
+]
+maintainers = [
+    {name = "Vexy Lines Team", email = "help@vexy.art"},
+]
+keywords = ["mkdocs", "plugin", "documentation", "html", "markdown", "postprocessing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: MkDocs",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Documentation",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Topic :: Text Processing :: Markup :: Markdown",
+]
+dependencies = [
+    "mkdocs>=1.6.0",
+    "beautifulsoup4>=4.12.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "ruff>=0.1.0",
+    "black>=23.7.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.3.0",
+    "types-pyyaml>=6.0.0",
+    "types-beautifulsoup4>=4.12.0",
+]
+docs = [
+    "vexy-mkdocs-material>=9.4.0",
+    "mkdocstrings[python]>=0.24.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/vexyart/vexy-mkdocs-output-as-input"
+Documentation = "https://github.com/vexyart/vexy-mkdocs-output-as-input"
+Repository = "https://github.com/vexyart/vexy-mkdocs-output-as-input"
+Issues = "https://github.com/vexyart/vexy-mkdocs-output-as-input/issues"
+Changelog = "https://github.com/vexyart/vexy-mkdocs-output-as-input/blob/main/CHANGELOG.md"
+
+[project.entry-points."mkdocs.plugins"]
+output-as-input = "mkdocs_output_as_input.plugin:OutputAsInputPlugin"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mkdocs_output_as_input"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/README.md",
+    "/CHANGELOG.md",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "PIE", # flake8-pie
+    "PL",  # pylint
+    "RUF", # ruff-specific rules
+]
+ignore = [
+    "PLR0913", # Too many arguments
+    "PLR2004", # Magic value used in comparison
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # Allow assert in tests
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = "mkdocs.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["src/mkdocs_output_as_input"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 90
+</document_content>
+</document>
+
+# File: /Users/adam/Developer/vcs/github.vexyart/vexy-mkdocs-output-as-input/src/mkdocs_output_as_input/__init__.py
+# Language: python
+
+from mkdocs_output_as_input.plugin import OutputAsInputPlugin
+from mkdocs_output_as_input._version import __version__
+
+
+# File: /Users/adam/Developer/vcs/github.vexyart/vexy-mkdocs-output-as-input/src/mkdocs_output_as_input/plugin.py
+# Language: python
+
+import logging
+from pathlib import Path
+from typing import Any, Optional
+import yaml
+from bs4 import BeautifulSoup
+from mkdocs.config import config_options
+from mkdocs.plugins import BasePlugin
+from mkdocs.structure.pages import Page
+
+class OutputAsInputPlugin(B, a, s, e, P, l, u, g, i, n):
+    """MkDocs plugin that captures HTML output and creates cousin Markdown files."""
+    def __init__((self)):
+        """Initialize the plugin."""
+    def on_config((self, config: dict[str, Any])) -> dict[str, Any]:
+        """Store site and docs directories."""
+    def on_page_read_source((self, page: Page, config: dict[str, Any])) -> Optional[str]:
+        """Capture source Markdown content and frontmatter."""
+    def on_post_build((self, config: dict[str, Any])) -> None:
+        """After build, process all HTML files and create cousin Markdowns."""
+    def _process_file((self, src_path: str, file_info: dict[str, Any], stage_dir: Path)) -> None:
+        """Process a single file: extract HTML and create cousin Markdown."""
+
+def __init__((self)):
+    """Initialize the plugin."""
+
+def on_config((self, config: dict[str, Any])) -> dict[str, Any]:
+    """Store site and docs directories."""
+
+def on_page_read_source((self, page: Page, config: dict[str, Any])) -> Optional[str]:
+    """Capture source Markdown content and frontmatter."""
+
+def on_post_build((self, config: dict[str, Any])) -> None:
+    """After build, process all HTML files and create cousin Markdowns."""
+
+def _process_file((self, src_path: str, file_info: dict[str, Any], stage_dir: Path)) -> None:
+    """Process a single file: extract HTML and create cousin Markdown."""
+
+
+# File: /Users/adam/Developer/vcs/github.vexyart/vexy-mkdocs-output-as-input/tests/test_plugin.py
+# Language: python
+
+import tempfile
+from pathlib import Path
+from unittest.mock import Mock
+import pytest
+from mkdocs_output_as_input.plugin import OutputAsInputPlugin
+
+class TestOutputAsInputPlugin:
+    """Test cases for OutputAsInputPlugin."""
+    def test_default_config((self, plugin)):
+        """Test plugin with default configuration."""
+    def test_on_config_stores_paths((self, plugin, mkdocs_config)):
+        """Test that on_config stores site and docs directories."""
+    def test_on_page_read_source_captures_content((self, plugin, mkdocs_config, temp_dir)):
+        """Test capturing source content and frontmatter."""
+    def test_on_page_read_source_no_frontmatter((self, plugin, mkdocs_config, temp_dir)):
+        """Test capturing content without frontmatter."""
+    def test_on_post_build_creates_cousin_files((self, plugin, mkdocs_config, temp_dir)):
+        """Test creating cousin files after build."""
+    def test_on_post_build_missing_html((self, plugin, mkdocs_config, temp_dir)):
+        """Test handling missing HTML output."""
+    def test_on_post_build_missing_element((self, plugin, mkdocs_config, temp_dir)):
+        """Test handling HTML without target element."""
+    def test_custom_config_options((self, plugin, mkdocs_config, temp_dir)):
+        """Test with custom configuration options."""
+    def test_invalid_yaml_frontmatter((self, plugin, mkdocs_config, temp_dir)):
+        """Test handling invalid YAML frontmatter."""
+    def test_file_read_error((self, plugin, mkdocs_config)):
+        """Test handling file read errors."""
+
+def plugin((self)):
+    """Create a plugin instance."""
+
+def temp_dir((self)):
+    """Create a temporary directory."""
+
+def mkdocs_config((self, temp_dir)):
+    """Create a mock MkDocs config."""
+
+def test_default_config((self, plugin)):
+    """Test plugin with default configuration."""
+
+def test_on_config_stores_paths((self, plugin, mkdocs_config)):
+    """Test that on_config stores site and docs directories."""
+
+def test_on_page_read_source_captures_content((self, plugin, mkdocs_config, temp_dir)):
+    """Test capturing source content and frontmatter."""
+
+def test_on_page_read_source_no_frontmatter((self, plugin, mkdocs_config, temp_dir)):
+    """Test capturing content without frontmatter."""
+
+def test_on_post_build_creates_cousin_files((self, plugin, mkdocs_config, temp_dir)):
+    """Test creating cousin files after build."""
+
+def test_on_post_build_missing_html((self, plugin, mkdocs_config, temp_dir)):
+    """Test handling missing HTML output."""
+
+def test_on_post_build_missing_element((self, plugin, mkdocs_config, temp_dir)):
+    """Test handling HTML without target element."""
+
+def test_custom_config_options((self, plugin, mkdocs_config, temp_dir)):
+    """Test with custom configuration options."""
+
+def test_invalid_yaml_frontmatter((self, plugin, mkdocs_config, temp_dir)):
+    """Test handling invalid YAML frontmatter."""
+
+def test_file_read_error((self, plugin, mkdocs_config)):
+    """Test handling file read errors."""
+
+
+</documents>
+</document_content>
+</document>
+
+<document index="15">
+<source>mkdocs.yml</source>
+<document_content>
+---
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Configuration: configuration.md
+  - Examples: examples.md
+  - API Reference: api.md
+plugins:
+  - search
+  - output-as-input:
+      stage_dir: stage
+      verbose: true
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+repo_name: vexy-mkdocs-output-as-input
+repo_url: https://github.com/vexyart/vexy-mkdocs-output-as-input
+# this_file: more/vexy-mkdocs-output-as-input-refactored/mkdocs.yml
+site_name: MkDocs Output as Input Plugin
+site_url: https://vexyart.github.io/vexy-mkdocs-output-as-input/
+theme:
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  name: material
+  palette:
+    - accent: indigo
+      primary: indigo
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - accent: indigo
+      primary: indigo
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+</document_content>
+</document>
+
+<document index="16">
+<source>pyproject.toml</source>
+<document_content>
+# this_file: more/mkdocs-plugins/vexy-mkdocs-output-as-input/pyproject.toml
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vexy-mkdocs-output-as-input"
+dynamic = ["version"]
+description = "MkDocs plugin that captures HTML output and creates cousin Markdown files with original frontmatter"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Vexy Lines Team", email = "help@vexy.art"},
+]
+maintainers = [
+    {name = "Vexy Lines Team", email = "help@vexy.art"},
+]
+keywords = ["mkdocs", "plugin", "documentation", "html", "markdown", "postprocessing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: MkDocs",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Documentation",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Topic :: Text Processing :: Markup :: Markdown",
+]
+dependencies = [
+    "mkdocs>=1.6.0",
+    "beautifulsoup4>=4.12.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "ruff>=0.1.0",
+    "black>=23.7.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.3.0",
+    "types-pyyaml>=6.0.0",
+    "types-beautifulsoup4>=4.12.0",
+]
+docs = [
+    "vexy-mkdocs-material>=9.4.0",
+    "mkdocstrings[python]>=0.24.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/vexyart/vexy-mkdocs-output-as-input"
+Documentation = "https://github.com/vexyart/vexy-mkdocs-output-as-input"
+Repository = "https://github.com/vexyart/vexy-mkdocs-output-as-input"
+Issues = "https://github.com/vexyart/vexy-mkdocs-output-as-input/issues"
+Changelog = "https://github.com/vexyart/vexy-mkdocs-output-as-input/blob/main/CHANGELOG.md"
+
+[project.entry-points."mkdocs.plugins"]
+output-as-input = "mkdocs_output_as_input.plugin:OutputAsInputPlugin"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mkdocs_output_as_input"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/README.md",
+    "/CHANGELOG.md",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "PIE", # flake8-pie
+    "PL",  # pylint
+    "RUF", # ruff-specific rules
+]
+ignore = [
+    "PLR0913", # Too many arguments
+    "PLR2004", # Magic value used in comparison
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # Allow assert in tests
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = "mkdocs.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["src/mkdocs_output_as_input"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 90
+</document_content>
+</document>
+
+# File: /Users/adam/Developer/vcs/github.vexyart/vexy-mkdocs-output-as-input/src/mkdocs_output_as_input/__init__.py
+# Language: python
+
+from mkdocs_output_as_input.plugin import OutputAsInputPlugin
+from mkdocs_output_as_input._version import __version__
+
+
+# File: /Users/adam/Developer/vcs/github.vexyart/vexy-mkdocs-output-as-input/src/mkdocs_output_as_input/plugin.py
+# Language: python
+
+import logging
+from pathlib import Path
+from typing import Any, Optional
+import yaml
+from bs4 import BeautifulSoup
+from mkdocs.config import config_options
+from mkdocs.plugins import BasePlugin
+from mkdocs.structure.pages import Page
+
+class OutputAsInputPlugin(B, a, s, e, P, l, u, g, i, n):
+    """MkDocs plugin that captures HTML output and creates cousin Markdown files."""
+    def __init__((self)):
+        """Initialize the plugin."""
+    def on_config((self, config: dict[str, Any])) -> dict[str, Any]:
+        """Store site and docs directories."""
+    def on_page_read_source((self, page: Page, config: dict[str, Any])) -> Optional[str]:
+        """Capture source Markdown content and frontmatter."""
+    def on_post_build((self, config: dict[str, Any])) -> None:
+        """After build, process all HTML files and create cousin Markdowns."""
+    def _process_file((self, src_path: str, file_info: dict[str, Any], stage_dir: Path)) -> None:
+        """Process a single file: extract HTML and create cousin Markdown."""
+
+def __init__((self)):
+    """Initialize the plugin."""
+
+def on_config((self, config: dict[str, Any])) -> dict[str, Any]:
+    """Store site and docs directories."""
+
+def on_page_read_source((self, page: Page, config: dict[str, Any])) -> Optional[str]:
+    """Capture source Markdown content and frontmatter."""
+
+def on_post_build((self, config: dict[str, Any])) -> None:
+    """After build, process all HTML files and create cousin Markdowns."""
+
+def _process_file((self, src_path: str, file_info: dict[str, Any], stage_dir: Path)) -> None:
+    """Process a single file: extract HTML and create cousin Markdown."""
+
+
+# File: /Users/adam/Developer/vcs/github.vexyart/vexy-mkdocs-output-as-input/tests/test_plugin.py
+# Language: python
+
+import tempfile
+from pathlib import Path
+from unittest.mock import Mock
+import pytest
+from mkdocs_output_as_input.plugin import OutputAsInputPlugin
+
+class TestOutputAsInputPlugin:
+    """Test cases for OutputAsInputPlugin."""
+    def test_default_config((self, plugin)):
+        """Test plugin with default configuration."""
+    def test_on_config_stores_paths((self, plugin, mkdocs_config)):
+        """Test that on_config stores site and docs directories."""
+    def test_on_page_read_source_captures_content((self, plugin, mkdocs_config, temp_dir)):
+        """Test capturing source content and frontmatter."""
+    def test_on_page_read_source_no_frontmatter((self, plugin, mkdocs_config, temp_dir)):
+        """Test capturing content without frontmatter."""
+    def test_on_post_build_creates_cousin_files((self, plugin, mkdocs_config, temp_dir)):
+        """Test creating cousin files after build."""
+    def test_on_post_build_missing_html((self, plugin, mkdocs_config, temp_dir)):
+        """Test handling missing HTML output."""
+    def test_on_post_build_missing_element((self, plugin, mkdocs_config, temp_dir)):
+        """Test handling HTML without target element."""
+    def test_custom_config_options((self, plugin, mkdocs_config, temp_dir)):
+        """Test with custom configuration options."""
+    def test_invalid_yaml_frontmatter((self, plugin, mkdocs_config, temp_dir)):
+        """Test handling invalid YAML frontmatter."""
+    def test_file_read_error((self, plugin, mkdocs_config)):
+        """Test handling file read errors."""
+
+def plugin((self)):
+    """Create a plugin instance."""
+
+def temp_dir((self)):
+    """Create a temporary directory."""
+
+def mkdocs_config((self, temp_dir)):
+    """Create a mock MkDocs config."""
+
+def test_default_config((self, plugin)):
+    """Test plugin with default configuration."""
+
+def test_on_config_stores_paths((self, plugin, mkdocs_config)):
+    """Test that on_config stores site and docs directories."""
+
+def test_on_page_read_source_captures_content((self, plugin, mkdocs_config, temp_dir)):
+    """Test capturing source content and frontmatter."""
+
+def test_on_page_read_source_no_frontmatter((self, plugin, mkdocs_config, temp_dir)):
+    """Test capturing content without frontmatter."""
+
+def test_on_post_build_creates_cousin_files((self, plugin, mkdocs_config, temp_dir)):
+    """Test creating cousin files after build."""
+
+def test_on_post_build_missing_html((self, plugin, mkdocs_config, temp_dir)):
+    """Test handling missing HTML output."""
+
+def test_on_post_build_missing_element((self, plugin, mkdocs_config, temp_dir)):
+    """Test handling HTML without target element."""
+
+def test_custom_config_options((self, plugin, mkdocs_config, temp_dir)):
+    """Test with custom configuration options."""
+
+def test_invalid_yaml_frontmatter((self, plugin, mkdocs_config, temp_dir)):
+    """Test handling invalid YAML frontmatter."""
+
+def test_file_read_error((self, plugin, mkdocs_config)):
+    """Test handling file read errors."""
+
+
+</documents>
+</document_content>
+</document>
+
+<document index="16">
+<source>mkdocs.yml</source>
+<document_content>
+---
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Configuration: configuration.md
+  - Examples: examples.md
+  - API Reference: api.md
+plugins:
+  - search
+  - output-as-input:
+      stage_dir: stage
+      verbose: true
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+repo_name: vexy-mkdocs-output-as-input
+repo_url: https://github.com/vexyart/vexy-mkdocs-output-as-input
+# this_file: more/vexy-mkdocs-output-as-input-refactored/mkdocs.yml
+site_name: MkDocs Output as Input Plugin
+site_url: https://vexyart.github.io/vexy-mkdocs-output-as-input/
+theme:
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  name: material
+  palette:
+    - accent: indigo
+      primary: indigo
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - accent: indigo
+      primary: indigo
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+</document_content>
+</document>
+
+<document index="17">
+<source>pyproject.toml</source>
+<document_content>
+# this_file: more/mkdocs-plugins/vexy-mkdocs-output-as-input/pyproject.toml
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vexy-mkdocs-output-as-input"
+dynamic = ["version"]
+description = "MkDocs plugin that captures HTML output and creates cousin Markdown files with original frontmatter"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Vexy Lines Team", email = "help@vexy.art"},
+]
+maintainers = [
+    {name = "Vexy Lines Team", email = "help@vexy.art"},
+]
+keywords = ["mkdocs", "plugin", "documentation", "html", "markdown", "postprocessing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: MkDocs",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Documentation",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Topic :: Text Processing :: Markup :: Markdown",
+]
+dependencies = [
+    "mkdocs>=1.6.0",
+    "beautifulsoup4>=4.12.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "ruff>=0.1.0",
+    "black>=23.7.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.3.0",
+    "types-pyyaml>=6.0.0",
+    "types-beautifulsoup4>=4.12.0",
+]
+docs = [
+    "vexy-mkdocs-material>=9.4.0",
+    "mkdocstrings[python]>=0.24.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/vexyart/vexy-mkdocs-output-as-input"
+Documentation = "https://github.com/vexyart/vexy-mkdocs-output-as-input"
+Repository = "https://github.com/vexyart/vexy-mkdocs-output-as-input"
+Issues = "https://github.com/vexyart/vexy-mkdocs-output-as-input/issues"
+Changelog = "https://github.com/vexyart/vexy-mkdocs-output-as-input/blob/main/CHANGELOG.md"
+
+[project.entry-points."mkdocs.plugins"]
+output-as-input = "mkdocs_output_as_input.plugin:OutputAsInputPlugin"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mkdocs_output_as_input"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/README.md",
+    "/CHANGELOG.md",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "PIE", # flake8-pie
+    "PL",  # pylint
+    "RUF", # ruff-specific rules
+]
+ignore = [
+    "PLR0913", # Too many arguments
+    "PLR2004", # Magic value used in comparison
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # Allow assert in tests
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = "mkdocs.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["src/mkdocs_output_as_input"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 90
+</document_content>
+</document>
+
+# File: /Users/adam/Developer/vcs/github.vexyart/vexy-mkdocs-output-as-input/src/mkdocs_output_as_input/__init__.py
+# Language: python
+
+from mkdocs_output_as_input.plugin import OutputAsInputPlugin
+from mkdocs_output_as_input._version import __version__
+
+
+# File: /Users/adam/Developer/vcs/github.vexyart/vexy-mkdocs-output-as-input/src/mkdocs_output_as_input/plugin.py
+# Language: python
+
+import logging
+from pathlib import Path
+from typing import Any, Optional
+import yaml
+from bs4 import BeautifulSoup
+from mkdocs.config import config_options
+from mkdocs.plugins import BasePlugin
+from mkdocs.structure.pages import Page
+
+class OutputAsInputPlugin(B, a, s, e, P, l, u, g, i, n):
+    """MkDocs plugin that captures HTML output and creates cousin Markdown files."""
+    def __init__((self)):
+        """Initialize the plugin."""
+    def on_config((self, config: dict[str, Any])) -> dict[str, Any]:
+        """Store site and docs directories."""
+    def on_page_read_source((self, page: Page, config: dict[str, Any])) -> Optional[str]:
+        """Capture source Markdown content and frontmatter."""
+    def on_post_build((self, config: dict[str, Any])) -> None:
+        """After build, process all HTML files and create cousin Markdowns."""
+    def _process_file((self, src_path: str, file_info: dict[str, Any], stage_dir: Path)) -> None:
+        """Process a single file: extract HTML and create cousin Markdown."""
+
+def __init__((self)):
+    """Initialize the plugin."""
+
+def on_config((self, config: dict[str, Any])) -> dict[str, Any]:
+    """Store site and docs directories."""
+
+def on_page_read_source((self, page: Page, config: dict[str, Any])) -> Optional[str]:
+    """Capture source Markdown content and frontmatter."""
+
+def on_post_build((self, config: dict[str, Any])) -> None:
+    """After build, process all HTML files and create cousin Markdowns."""
+
+def _process_file((self, src_path: str, file_info: dict[str, Any], stage_dir: Path)) -> None:
+    """Process a single file: extract HTML and create cousin Markdown."""
+
+
+# File: /Users/adam/Developer/vcs/github.vexyart/vexy-mkdocs-output-as-input/tests/test_plugin.py
+# Language: python
+
+import tempfile
+from pathlib import Path
+from unittest.mock import Mock
+import pytest
+from mkdocs_output_as_input.plugin import OutputAsInputPlugin
+
+class TestOutputAsInputPlugin:
+    """Test cases for OutputAsInputPlugin."""
+    def test_default_config((self, plugin)):
+        """Test plugin with default configuration."""
+    def test_on_config_stores_paths((self, plugin, mkdocs_config)):
+        """Test that on_config stores site and docs directories."""
+    def test_on_page_read_source_captures_content((self, plugin, mkdocs_config, temp_dir)):
+        """Test capturing source content and frontmatter."""
+    def test_on_page_read_source_no_frontmatter((self, plugin, mkdocs_config, temp_dir)):
+        """Test capturing content without frontmatter."""
+    def test_on_post_build_creates_cousin_files((self, plugin, mkdocs_config, temp_dir)):
+        """Test creating cousin files after build."""
+    def test_on_post_build_missing_html((self, plugin, mkdocs_config, temp_dir)):
+        """Test handling missing HTML output."""
+    def test_on_post_build_missing_element((self, plugin, mkdocs_config, temp_dir)):
+        """Test handling HTML without target element."""
+    def test_custom_config_options((self, plugin, mkdocs_config, temp_dir)):
+        """Test with custom configuration options."""
+    def test_invalid_yaml_frontmatter((self, plugin, mkdocs_config, temp_dir)):
+        """Test handling invalid YAML frontmatter."""
+    def test_file_read_error((self, plugin, mkdocs_config)):
+        """Test handling file read errors."""
+
+def plugin((self)):
+    """Create a plugin instance."""
+
+def temp_dir((self)):
+    """Create a temporary directory."""
+
+def mkdocs_config((self, temp_dir)):
+    """Create a mock MkDocs config."""
+
+def test_default_config((self, plugin)):
+    """Test plugin with default configuration."""
+
+def test_on_config_stores_paths((self, plugin, mkdocs_config)):
+    """Test that on_config stores site and docs directories."""
+
+def test_on_page_read_source_captures_content((self, plugin, mkdocs_config, temp_dir)):
+    """Test capturing source content and frontmatter."""
+
+def test_on_page_read_source_no_frontmatter((self, plugin, mkdocs_config, temp_dir)):
+    """Test capturing content without frontmatter."""
+
+def test_on_post_build_creates_cousin_files((self, plugin, mkdocs_config, temp_dir)):
+    """Test creating cousin files after build."""
+
+def test_on_post_build_missing_html((self, plugin, mkdocs_config, temp_dir)):
+    """Test handling missing HTML output."""
+
+def test_on_post_build_missing_element((self, plugin, mkdocs_config, temp_dir)):
+    """Test handling HTML without target element."""
+
+def test_custom_config_options((self, plugin, mkdocs_config, temp_dir)):
+    """Test with custom configuration options."""
+
+def test_invalid_yaml_frontmatter((self, plugin, mkdocs_config, temp_dir)):
+    """Test handling invalid YAML frontmatter."""
+
+def test_file_read_error((self, plugin, mkdocs_config)):
+    """Test handling file read errors."""
+
+
+</documents>

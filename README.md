@@ -22,15 +22,13 @@ This plugin enables powerful post-processing workflows by:
 Install from PyPI:
 
 ```bash
-pip install vexy-mkdocs-output-as-input
+uv pip install --system --upgrade vexy-mkdocs-output-as-input
 ```
 
 Or install from source:
 
 ```bash
-git clone https://github.com/vexyart/vexy-mkdocs-output-as-input
-cd vexy-mkdocs-output-as-input
-pip install -e .
+pip install git+https://github.com/vexyart/vexy-mkdocs-output-as-input
 ```
 
 ## Quick Start

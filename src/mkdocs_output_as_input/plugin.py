@@ -34,6 +34,7 @@ class OutputAsInputPlugin(BasePlugin):
 
     def __init__(self):
         """Initialize the plugin."""
+        super().__init__()
         self.source_files = {}
         self.site_dir = None
         self.docs_dir = None
