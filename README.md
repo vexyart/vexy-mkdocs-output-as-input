@@ -228,42 +228,67 @@ hugo --contentDir=stage/
 git clone https://github.com/vexyart/vexy-mkdocs-output-as-input
 cd vexy-mkdocs-output-as-input
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Automated setup (recommended)
+./scripts/dev-setup.sh
 
-# Install in development mode
-pip install -e .[dev]
+# Or manual setup
+make dev-setup
+```
 
-# Install pre-commit hooks
-pre-commit install
+### Common Development Tasks
+
+```bash
+# Run all tests and code quality checks
+make test
+
+# Build the package
+make build
+
+# Create a new patch release
+make release
+
+# Clean build artifacts
+make clean
+
+# View all available commands
+make help
 ```
 
 ### Running Tests
 
 ```bash
-# Run all tests
-pytest
+# Run all tests with script
+./scripts/test.sh
 
-# Run with coverage
+# Or run individual components
 pytest --cov=mkdocs_output_as_input --cov-report=html
-
-# Run specific test
-pytest tests/test_plugin.py::TestOutputAsInputPlugin::test_default_config
-```
-
-### Code Quality
-
-```bash
-# Format code
-black src tests
-
-# Lint code
 ruff check src tests
-
-# Type check
 mypy src
 ```
+
+### Build and Release
+
+The project uses automated build and release workflows:
+
+1. **Local Release Script:**
+   ```bash
+   ./scripts/release.sh patch  # Creates v1.0.1 -> v1.0.2
+   ./scripts/release.sh minor  # Creates v1.0.2 -> v1.1.0
+   ./scripts/release.sh major  # Creates v1.1.0 -> v2.0.0
+   ```
+
+2. **GitHub Actions:** Automatically triggered on git tags
+   - Runs tests on multiple platforms (Linux, Windows, macOS)
+   - Builds Python packages and standalone binaries
+   - Publishes to PyPI using trusted publishing
+   - Creates GitHub releases with artifacts
+
+3. **Standalone Binaries:** Available for download from releases
+   - Linux: `mkdocs-output-as-input-ubuntu-latest`
+   - Windows: `mkdocs-output-as-input-windows-latest.exe`
+   - macOS: `mkdocs-output-as-input-macos-latest`
+
+See [BUILD_RELEASE.md](BUILD_RELEASE.md) for detailed documentation.
 
 ## Contributing
 
