@@ -4,7 +4,7 @@ import argparse
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional, Union
 
 import yaml
 from bs4 import BeautifulSoup
@@ -22,7 +22,7 @@ def setup_logging(verbose: bool = False) -> None:
     )
 
 
-def extract_frontmatter(content: str) -> tuple[Dict[str, Any], str]:
+def extract_frontmatter(content: str) -> tuple[dict[str, Any], str]:
     """Extract YAML frontmatter from Markdown content.
     
     Args:
@@ -31,9 +31,9 @@ def extract_frontmatter(content: str) -> tuple[Dict[str, Any], str]:
     Returns:
         Tuple of (frontmatter dict, content without frontmatter)
     """
-    frontmatter: Dict[str, Any] = {}
+    frontmatter: dict[str, Any] = {}
     body = content
-    
+
     if content.startswith("---\n"):
         try:
             end_idx = content.find("\n---\n", 4)
@@ -43,13 +43,13 @@ def extract_frontmatter(content: str) -> tuple[Dict[str, Any], str]:
                 body = content[end_idx + 5:]  # Skip past the closing ---\n
         except yaml.YAMLError as e:
             logger.warning(f"Failed to parse frontmatter: {e}")
-    
+
     return frontmatter, body
 
 
 def process_html(
     html_content: str,
-    html_element: str | list[str] = "main",
+    html_element: Union[str, list[str]] = "main",
     target_tag: str = "article",
     preserve_links: bool = False,
     minify: bool = False,
@@ -69,11 +69,11 @@ def process_html(
         Processed HTML string or None if element not found
     """
     soup = BeautifulSoup(html_content, "html.parser")
-    
+
     # Extract target element(s)
     html_elements = html_element if isinstance(html_element, list) else [html_element]
-    
-    extracted_elements = []
+
+    extracted_elements: list[Any] = []
     for selector in html_elements:
         # Try CSS selector first
         elements = soup.select(selector)
@@ -84,11 +84,11 @@ def process_html(
             element = soup.find(selector)
             if element:
                 extracted_elements.append(element)
-    
+
     if not extracted_elements:
         logger.error(f"No elements matching {html_element} found in HTML")
         return None
-    
+
     # If multiple elements, wrap them in a container
     if len(extracted_elements) > 1:
         container = soup.new_tag(target_tag)
@@ -96,7 +96,7 @@ def process_html(
             container.append(elem.extract())
         target_element = container
     else:
-        target_element = extracted_elements[0]
+        target_element = extracted_elements[0]  # type: ignore[assignment]
         # Transform to target tag if different
         # For single selector, check if it's not a CSS selector
         if target_tag != target_element.name:
@@ -107,7 +107,7 @@ def process_html(
                     target_element.name = target_tag
             elif len(html_element) == 1 and html_element[0] == target_element.name:
                 target_element.name = target_tag
-    
+
     # Handle link preservation if requested
     if preserve_links:
         # Convert absolute links back to relative
@@ -119,7 +119,7 @@ def process_html(
                     # In a real implementation, this would be more sophisticated
                     if url.startswith("/") and not url.startswith("//"):
                         link[attr] = f".{url}"
-    
+
     # Format output
     if minify:
         # Remove extra whitespace between tags
@@ -128,14 +128,14 @@ def process_html(
         result = target_element.prettify()
     else:
         result = str(target_element)
-    
+
     return result
 
 
 def process_file(
     input_path: Path,
     output_path: Path,
-    html_element: str | list[str] = "main",
+    html_element: Union[str, list[str]] = "main",
     target_tag: str = "article",
     include_frontmatter: bool = True,
     preserve_links: bool = False,
@@ -155,16 +155,16 @@ def process_file(
         prettify: Whether to prettify the output
     """
     logger.info(f"Processing {input_path} -> {output_path}")
-    
+
     # Read input file
     try:
         content = input_path.read_text(encoding="utf-8")
     except Exception as e:
         logger.error(f"Failed to read {input_path}: {e}")
         raise
-    
+
     # Check if there's a corresponding markdown file for frontmatter
-    frontmatter = {}
+    frontmatter: dict[str, Any] = {}
     if include_frontmatter:
         md_path = input_path.with_suffix(".md")
         if md_path.exists():
@@ -174,7 +174,7 @@ def process_file(
                 logger.debug(f"Extracted frontmatter from {md_path}")
             except Exception as e:
                 logger.warning(f"Failed to read markdown file {md_path}: {e}")
-    
+
     # Process HTML
     processed_html = process_html(
         content,
@@ -184,13 +184,13 @@ def process_file(
         minify=minify,
         prettify=prettify,
     )
-    
+
     if processed_html is None:
         raise ValueError(f"Failed to process HTML from {input_path}")
-    
+
     # Create output directory if needed
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Write output
     try:
         with output_path.open("w", encoding="utf-8") as f:
@@ -199,11 +199,11 @@ def process_file(
                 f.write("---\n")
                 f.write(yaml.safe_dump(frontmatter, default_flow_style=False))
                 f.write("---\n\n")
-            
+
             # Write processed HTML
             f.write(processed_html)
             f.write("\n")
-            
+
         logger.info(f"Successfully wrote {output_path}")
     except Exception as e:
         logger.error(f"Failed to write {output_path}: {e}")
@@ -230,9 +230,9 @@ Examples:
   mkdocs-output-as-input process input.html output.md --preserve-links --prettify
         """,
     )
-    
+
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # Process command
     process_parser = subparsers.add_parser("process", help="Process HTML file(s)")
     process_parser.add_argument("input", type=Path, help="Input HTML file")
@@ -273,26 +273,26 @@ Examples:
         action="store_true",
         help="Enable verbose logging",
     )
-    
+
     args = parser.parse_args()
-    
+
     if not args.command:
         parser.print_help()
         return 1
-    
+
     # Set up logging
     setup_logging(args.verbose)
-    
+
     try:
         if args.command == "process":
             # Validate mutually exclusive options
             if args.minify and args.prettify:
                 logger.error("Cannot use both --minify and --prettify")
                 return 1
-            
+
             # Default to "main" if no elements specified
             html_element = args.html_element if args.html_element else "main"
-            
+
             process_file(
                 args.input,
                 args.output,
@@ -307,7 +307,7 @@ Examples:
     except Exception as e:
         logger.error(f"Error: {e}")
         return 1
-    
+
     return 0
 
 

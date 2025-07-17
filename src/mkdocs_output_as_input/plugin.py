@@ -4,7 +4,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import yaml
 from bs4 import BeautifulSoup
@@ -40,7 +40,7 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
     def __init__(self) -> None:
         """Initialize the plugin."""
         super().__init__()
-        self.source_files: Dict[str, Dict[str, Any]] = {}
+        self.source_files: dict[str, dict[str, Any]] = {}
         self.site_dir: Optional[Path] = None
         self.docs_dir: Optional[Path] = None
 
@@ -71,7 +71,7 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
             return None
 
         # Extract frontmatter if present
-        frontmatter: Dict[str, Any] = {}
+        frontmatter: dict[str, Any] = {}
         if content.startswith("---\n"):
             try:
                 end_idx = content.find("\n---\n", 4)
@@ -118,7 +118,7 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
         if self.site_dir is None:
             logger.error("OutputAsInput: site_dir not set")
             return
-        
+
         # Determine HTML output path
         # Special case: README.md often becomes index.html at root
         if src_path.lower() == "readme.md":
@@ -152,8 +152,8 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
         html_elements = self.config["html_element"]
         if isinstance(html_elements, str):
             html_elements = [html_elements]
-        
-        extracted_elements = []
+
+        extracted_elements: list[Any] = []
         for selector in html_elements:
             # Try CSS selector first
             elements = soup.select(selector)
@@ -164,10 +164,11 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
                 element = soup.find(selector)
                 if element:
                     extracted_elements.append(element)
-        
+
         if not extracted_elements:
             logger.warning(
-                f"OutputAsInput: No elements matching {self.config['html_element']} found in {full_html_path}"
+                f"OutputAsInput: No elements matching {self.config['html_element']} "
+                f"found in {full_html_path}"
             )
             return
 
@@ -178,10 +179,11 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
                 container.append(elem.extract())
             target_element = container
         else:
-            target_element = extracted_elements[0]
+            target_element = extracted_elements[0]  # type: ignore[assignment]
             # Transform to target tag if different and single selector was a tag name
-            if isinstance(self.config["html_element"], str) and self.config["target_tag"] != self.config["html_element"]:
-                target_element.name = self.config["target_tag"]  # type: ignore[misc]
+            if (isinstance(self.config["html_element"], str) and 
+                self.config["target_tag"] != self.config["html_element"]):
+                target_element.name = self.config["target_tag"]
 
         # Handle link preservation if requested
         if self.config["preserve_links"]:
@@ -221,7 +223,7 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
                     html_output = target_element.prettify()
                 else:
                     html_output = str(target_element)
-                
+
                 f.write(html_output)
                 f.write("\n")
 
