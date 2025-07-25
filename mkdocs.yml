@@ -1,55 +1,220 @@
----
-markdown_extensions:
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.superfences
-  - pymdownx.snippets
-  - admonition
-  - pymdownx.details
-  - pymdownx.tabbed:
-      alternate_style: true
-  - toc:
-      permalink: true
+# this_file: mkdocs.yml
+site_name: MkDocs Output as Input Plugin
+site_url: https://vexyart.github.io/vexy-mkdocs-output-as-input/
+site_description: Transform MkDocs HTML output into reusable Markdown files with preserved metadata
+site_author: Vexyart
+repo_name: vexy-mkdocs-output-as-input
+repo_url: https://github.com/vexyart/vexy-mkdocs-output-as-input
+edit_uri: edit/main/src_docs/
+copyright: Copyright &copy; 2024 Vexyart
+
+# Documentation source
+docs_dir: src_docs
+site_dir: docs
+
+# Theme configuration
+theme:
+  name: material
+  custom_dir: src_docs/overrides
+  logo: assets/logo.png
+  favicon: assets/favicon.png
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+  features:
+    # Navigation
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.prune
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    # Table of contents
+    - toc.follow
+    - toc.integrate
+    # Search
+    - search.suggest
+    - search.highlight
+    - search.share
+    # Code blocks
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+    # Content
+    - content.action.edit
+    - content.action.view
+    - content.tooltips
+    # Header
+    - header.autohide
+    # Announce
+    - announce.dismiss
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+# Navigation
 nav:
-  - Home: index.md
-  - Getting Started: getting-started.md
-  - Configuration: configuration.md
-  - Examples: examples.md
-  - API Reference: api.md
+  - Home:
+    - index.md
+    - Changelog: changelog.md
+  - Getting Started:
+    - getting-started.md
+    - FAQ: faq.md
+  - User Guide:
+    - Configuration: configuration.md
+    - Examples: examples.md
+    - Troubleshooting: troubleshooting.md
+  - API Reference:
+    - api/index.md
+  - Development:
+    - development.md
+    - Contributing: contributing.md
+
+# Plugins
 plugins:
-  - search
+  - search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
   - output-as-input:
       stage_dir: stage
       verbose: true
   - mkdocstrings:
+      default_handler: python
       handlers:
         python:
+          paths: [src]
           options:
+            docstring_style: google
+            docstring_section_style: table
             show_source: true
-repo_name: vexy-mkdocs-output-as-input
-repo_url: https://github.com/vexyart/vexy-mkdocs-output-as-input
-# this_file: more/vexy-mkdocs-output-as-input-refactored/mkdocs.yml
-site_name: MkDocs Output as Input Plugin
-site_url: https://vexyart.github.io/vexy-mkdocs-output-as-input/
-theme:
-  features:
-    - navigation.sections
-    - navigation.expand
-    - navigation.top
-    - search.suggest
-    - search.highlight
-    - content.code.copy
-  name: material
-  palette:
-    - accent: indigo
-      primary: indigo
-      scheme: default
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - accent: indigo
-      primary: indigo
-      scheme: slate
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_object_full_path: false
+            show_category_heading: true
+            members_order: source
+            group_by_category: true
+            show_bases: true
+            show_submodules: false
+            merge_init_into_class: true
+            filters: ["!^_"]
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+      htmlmin_opts:
+        remove_comments: true
+  - social:
+      cards_layout_options:
+        background_color: "#3f51b5"
+        color: "#ffffff"
+
+# Markdown extensions
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      permalink_title: Anchor link to this section for reference
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      auto_append:
+        - includes/abbreviations.md
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Extra configuration
+extra:
+  version:
+    provider: mike
+    default: stable
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/vexyart/vexy-mkdocs-output-as-input
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/vexy-mkdocs-output-as-input/
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/emoticon-happy-outline
+          name: This page was helpful
+          data: 1
+          note: >-
+            Thanks for your feedback!
+        - icon: material/emoticon-sad-outline
+          name: This page could be improved
+          data: 0
+          note: >-
+            Thanks for your feedback! Help us improve this page by
+            <a href="https://github.com/vexyart/vexy-mkdocs-output-as-input/issues/new/?title=[Feedback]+{title}+-+{url}" target="_blank" rel="noopener">submitting an issue</a>.
+
+# Extra CSS and JavaScript
+extra_css:
+  - assets/css/custom.css
+
+extra_javascript:
+  - assets/js/custom.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
