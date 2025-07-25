@@ -1,218 +1,247 @@
 # Comprehensive Improvement Plan for vexy-mkdocs-output-as-input
 
 ## Project Overview
+This MkDocs plugin captures rendered HTML output and creates "cousin" Markdown files with original frontmatter and extracted HTML content. The project is well-structured but needs improvements in documentation, code quality, and test coverage.
 
-This MkDocs plugin captures rendered HTML output and creates "cousin" Markdown files combining original YAML frontmatter with extracted HTML content. The project needs improvements in code quality, testing, documentation, and overall architecture.
+## Phase 1: Documentation Setup and Structure (Priority: HIGH)
 
-## Phase 1: Code Quality & Architecture Improvements
+### 1.1 Create MkDocs Documentation Structure
+**Goal**: Set up professional documentation using MkDocs + Material theme in `src_docs/` directory
 
-### 1.1 Enhanced Type Safety & Modern Python Features
-- **Upgrade type hints to Python 3.12+ standards**
-  - Use `type` statement for type aliases
-  - Replace `Optional[T]` with `T | None`
-  - Use generic types from built-in types (list, dict) instead of typing module
-  - Add comprehensive type hints to all functions and methods
-  - Create type aliases for complex types (e.g., `type FrontmatterDict = dict[str, Any]`)
+**Technical Approach**:
+- Create `src_docs/` directory structure with proper organization
+- Configure advanced MkDocs features (search, navigation, code highlighting)
+- Implement versioned documentation support
+- Add API documentation generation using mkdocstrings
 
-### 1.2 Improved Error Handling & Logging
-- **Migrate from standard logging to loguru**
-  - Already imported but not fully utilized
-  - Add structured logging with context
-  - Implement debug logging for all major operations
-  - Add performance timing logs for optimization insights
-  - Create custom log levels for plugin-specific events
+**Specific Tasks**:
+1. Create documentation directory structure:
+   - `src_docs/index.md` - Landing page with quick overview
+   - `src_docs/getting-started.md` - Installation and quick start guide
+   - `src_docs/configuration.md` - Detailed configuration reference
+   - `src_docs/examples.md` - Real-world usage examples
+   - `src_docs/api.md` - API reference using mkdocstrings
+   - `src_docs/development.md` - Contributing guide
+   - `src_docs/changelog.md` - Symlink to CHANGELOG.md
+   - `src_docs/faq.md` - Frequently asked questions
+   - `src_docs/troubleshooting.md` - Common issues and solutions
 
-### 1.3 Configuration Enhancement
-- **Add new configuration options**
-  - `exclude_patterns`: List of glob patterns to exclude files
-  - `process_only`: List of glob patterns to include only specific files
-  - `custom_extractors`: Plugin system for custom HTML extraction logic
-  - `output_format`: Support different output formats (markdown, html, json)
-  - `template_engine`: Support Jinja2 templates for output customization
-  - `parallel_processing`: Enable parallel file processing
-  - `cache_enabled`: Cache extracted content for faster rebuilds
+2. Enhance mkdocs.yml configuration:
+   - Add navigation tabs and sections
+   - Configure Material theme features (dark mode, search, etc.)
+   - Set up mkdocstrings for automatic API documentation
+   - Add custom CSS for branding
+   - Configure social cards generation
 
-### 1.4 Performance Optimizations
-- **Implement caching mechanism**
-  - Cache extracted HTML content based on file hash
-  - Skip unchanged files during rebuild
-  - Store cache in `.mkdocs_cache/output_as_input/`
-  
-- **Add parallel processing**
-  - Use multiprocessing for file extraction
-  - Configurable worker count
-  - Progress bar for large projects
+### 1.2 Write Comprehensive Documentation Content
+**Goal**: Create user-friendly, example-rich documentation
 
-### 1.5 Plugin Architecture Refactoring
-- **Split monolithic plugin.py into modules**
-  - `core.py`: Base plugin functionality
-  - `extractors.py`: HTML extraction logic
-  - `processors.py`: Content processing pipeline
-  - `cache.py`: Caching implementation
-  - `utils.py`: Helper functions
-  - `types.py`: Type definitions and aliases
+**Content Strategy**:
+1. **Landing Page (index.md)**:
+   - Eye-catching feature overview with icons
+   - Quick installation snippet
+   - Links to key sections
+   - Latest version badge
 
-## Phase 2: Testing Improvements
+2. **Getting Started Guide**:
+   - Prerequisites and system requirements
+   - Step-by-step installation (pip, uv, from source)
+   - First plugin usage example
+   - Verification steps
 
-### 2.1 Test Coverage Enhancement
-- **Achieve 100% code coverage**
-  - Add tests for edge cases in HTML extraction
-  - Test all configuration combinations
-  - Add integration tests with real MkDocs projects
-  - Test error recovery scenarios
+3. **Configuration Reference**:
+   - Detailed parameter documentation with examples
+   - Common configuration patterns
+   - Performance considerations
+   - Migration guide from older versions
 
-### 2.2 Test Organization
-- **Restructure test suite**
-  - `test_unit/`: Unit tests for individual components
-  - `test_integration/`: Integration tests with MkDocs
-  - `test_e2e/`: End-to-end tests with example projects
-  - `test_performance/`: Performance benchmarks
+4. **Examples Section**:
+   - Basic usage scenarios
+   - Integration with different MkDocs themes
+   - Multi-stage documentation pipelines
+   - Custom post-processing workflows
+   - Real-world case studies
 
-### 2.3 Test Fixtures & Utilities
-- **Create comprehensive test fixtures**
-  - Sample MkDocs projects with different themes
-  - Complex HTML structures for extraction testing
-  - Invalid/malformed HTML scenarios
-  - Large file sets for performance testing
+5. **API Documentation**:
+   - Auto-generated from docstrings
+   - Usage examples for each method
+   - Extension points for developers
 
-### 2.4 Property-Based Testing
-- **Add hypothesis tests**
-  - Test frontmatter parsing with random YAML
-  - Test HTML extraction with generated HTML
-  - Verify idempotency of processing
+## Phase 2: Code Quality Improvements (Priority: HIGH)
 
-## Phase 3: Documentation Excellence
+### 2.1 Enhanced Error Handling and Logging
+**Goal**: Improve reliability and debuggability
 
-### 3.1 API Documentation
-- **Generate comprehensive API docs**
-  - Use mkdocstrings for automatic API documentation
-  - Add detailed docstrings to all public methods
-  - Include code examples in docstrings
-  - Document internal architecture for contributors
+**Technical Implementation**:
+1. Replace basic logging with structured loguru logging:
+   - Add context to all log messages
+   - Implement log levels properly
+   - Add performance timing logs
+   - Create debug mode with detailed trace logs
 
-### 3.2 User Guide Enhancement
-- **Expand user documentation**
-  - Step-by-step tutorials for common use cases
-  - Troubleshooting guide with common issues
-  - Performance tuning guide
-  - Migration guide from other similar plugins
+2. Implement comprehensive error handling:
+   - Custom exception classes for different error types
+   - Graceful degradation for non-critical errors
+   - User-friendly error messages with solutions
+   - Error recovery mechanisms
 
-### 3.3 Examples & Demos
-- **Create example projects**
-  - Basic usage example
-  - Integration with Hugo
-  - Integration with Jekyll
-  - Custom post-processing pipeline
-  - Multi-language documentation setup
+### 2.2 Performance Optimizations
+**Goal**: Handle large documentation sites efficiently
 
-### 3.4 Visual Documentation
-- **Add diagrams and flowcharts**
-  - Plugin architecture diagram
-  - Data flow visualization
-  - Configuration decision tree
-  - Performance comparison charts
+**Optimizations**:
+1. Implement concurrent processing:
+   - Process multiple files in parallel using asyncio
+   - Add progress indicators for large sites
+   - Implement file caching for unchanged content
 
-## Phase 4: Feature Enhancements
+2. Memory efficiency:
+   - Stream large HTML files instead of loading entirely
+   - Implement lazy loading for BeautifulSoup parsing
+   - Add memory usage monitoring in verbose mode
 
-### 4.1 Advanced HTML Processing
-- **Implement smart content extraction**
-  - Auto-detect main content area
-  - Remove navigation/sidebar elements
-  - Preserve semantic HTML structure
-  - Handle dynamic content (JavaScript-rendered)
+### 2.3 Code Architecture Improvements
+**Goal**: Make code more maintainable and extensible
 
-### 4.2 Template System
-- **Add Jinja2 template support**
-  - Custom output templates
-  - Variable injection from frontmatter
-  - Template inheritance
-  - Built-in template library
+**Refactoring Plan**:
+1. Split plugin.py into modules:
+   - `core.py` - Main plugin logic
+   - `parser.py` - HTML parsing and extraction
+   - `writer.py` - File writing and formatting
+   - `config.py` - Configuration validation
+   - `utils.py` - Utility functions
 
-### 4.3 Plugin Ecosystem
-- **Create extension points**
-  - Custom extractor plugins
-  - Post-processing hooks
-  - Output format plugins
-  - Integration adapters
+2. Implement design patterns:
+   - Strategy pattern for different output formats
+   - Factory pattern for parser selection
+   - Observer pattern for progress notifications
 
-### 4.4 CLI Enhancements
-- **Improve CLI tool**
-  - Interactive mode for configuration
-  - Batch processing capabilities
-  - Validation commands
-  - Performance profiling
+3. Add type hints comprehensively:
+   - Use Python 3.12+ type syntax
+   - Add runtime type checking in debug mode
+   - Generate type stubs for better IDE support
 
-## Phase 5: Quality Assurance
+## Phase 3: Test Suite Enhancement (Priority: HIGH)
 
-### 5.1 CI/CD Improvements
-- **Enhance GitHub Actions**
-  - Matrix testing across Python versions
-  - Test with multiple MkDocs versions
-  - Automated performance regression tests
-  - Security scanning with Bandit
+### 3.1 Expand Test Coverage
+**Goal**: Achieve 100% code coverage with meaningful tests
 
-### 5.2 Code Quality Tools
-- **Integrate additional linters**
-  - pylint for code quality
-  - black for formatting
-  - isort for import sorting
-  - pre-commit hooks for all checks
+**New Test Categories**:
+1. **Integration Tests**:
+   - Full MkDocs build pipeline tests
+   - Theme compatibility tests (Material, ReadTheDocs, etc.)
+   - Large site performance tests
+   - Multi-plugin interaction tests
 
-### 5.3 Documentation Quality
-- **Implement doc checks**
-  - Spell checking
-  - Link validation
-  - Code example testing
-  - Screenshot automation
+2. **Edge Case Tests**:
+   - Malformed HTML handling
+   - Unicode and special character handling
+   - Symlink and special file handling
+   - Concurrent processing race conditions
 
-## Phase 6: Community & Ecosystem
+3. **Property-Based Tests**:
+   - Use hypothesis for fuzzing
+   - Test with random HTML structures
+   - Verify invariants hold
 
-### 6.1 Community Building
-- **Foster community engagement**
-  - Create plugin showcase
-  - Add contributor guidelines
-  - Set up discussion forums
-  - Regular release notes
+### 3.2 Test Infrastructure Improvements
+**Goal**: Make tests faster and more reliable
 
-### 6.2 Integration Support
-- **Official integrations**
-  - Hugo integration guide
-  - Jekyll integration guide
-  - Sphinx bridge
-  - Docusaurus adapter
+**Implementation**:
+1. Add test fixtures for common scenarios
+2. Implement test data generators
+3. Add performance benchmarks
+4. Create visual regression tests for output
 
-### 6.3 Plugin Templates
-- **Provide starter templates**
-  - Basic plugin setup
-  - Advanced configuration
-  - Custom extractor example
-  - Full pipeline example
+## Phase 4: Feature Enhancements (Priority: MEDIUM)
 
-## Implementation Priority
+### 4.1 New Configuration Options
+1. **output_format**: Support multiple output formats (Markdown, HTML, JSON)
+2. **custom_processors**: Allow user-defined processing functions
+3. **exclude_patterns**: Glob patterns to skip files
+4. **parallel_processing**: Enable/disable concurrent processing
+5. **cache_enabled**: Cache processed files
+6. **template_engine**: Use Jinja2 templates for output
 
-1. **High Priority (Immediate)**
-   - Type safety improvements
-   - Loguru integration
-   - Test coverage to 100%
-   - Basic documentation in src_docs
+### 4.2 Advanced HTML Processing
+1. **Smart Content Extraction**:
+   - Auto-detect content areas in different themes
+   - Remove navigation and UI elements intelligently
+   - Preserve semantic structure
 
-2. **Medium Priority (Next Sprint)**
-   - Configuration enhancements
-   - Performance optimizations
-   - API documentation
-   - Example projects
+2. **Link Resolution**:
+   - Handle complex link transformations
+   - Support for different URL schemes
+   - Maintain link integrity across stages
 
-3. **Low Priority (Future)**
-   - Template system
-   - Plugin ecosystem
-   - Advanced features
-   - Community building
+### 4.3 CLI Enhancements
+1. **Interactive Mode**:
+   - Configuration wizard
+   - Preview mode before processing
+   - Selective file processing
+
+2. **Batch Operations**:
+   - Process multiple MkDocs projects
+   - Bulk configuration updates
+   - Migration tools
+
+## Phase 5: Developer Experience (Priority: MEDIUM)
+
+### 5.1 Development Tools
+1. **VS Code Extension**:
+   - Syntax highlighting for cousin files
+   - Preview integration
+   - Configuration snippets
+
+2. **GitHub Actions**:
+   - Reusable workflow for CI/CD
+   - Automated testing matrix
+   - Performance regression detection
+
+### 5.2 Plugin Ecosystem
+1. **Extension API**:
+   - Hook system for custom processors
+   - Event-driven architecture
+   - Plugin chaining support
+
+2. **Companion Plugins**:
+   - Search index builder
+   - SEO optimizer
+   - Analytics integrator
+
+## Phase 6: Performance and Scalability (Priority: LOW)
+
+### 6.1 Caching System
+1. Implement intelligent caching:
+   - Content hash-based cache
+   - Incremental processing
+   - Distributed cache support
+
+### 6.2 Cloud Integration
+1. Support for cloud storage:
+   - S3 bucket output
+   - Azure Blob storage
+   - Google Cloud Storage
 
 ## Success Metrics
+- Documentation site receives positive user feedback
+- Test coverage reaches 100% with meaningful tests
+- Plugin handles 1000+ page sites efficiently
+- Zero critical bugs in production
+- Active community contributions
 
-- Code coverage: 100%
-- Type coverage: 100%
-- Documentation coverage: All public APIs documented
-- Performance: <100ms overhead per file
-- User satisfaction: Clear, comprehensive docs
-- Community: Active contributors and users
+## Implementation Timeline
+- Phase 1: 2-3 days (Documentation)
+- Phase 2: 3-4 days (Code Quality)
+- Phase 3: 2-3 days (Testing)
+- Phase 4: 4-5 days (Features)
+- Phase 5: 3-4 days (Developer Experience)
+- Phase 6: 2-3 days (Performance)
+
+Total estimated time: 3-4 weeks for full implementation
+
+## Risk Mitigation
+- Maintain backward compatibility
+- Implement feature flags for new functionality
+- Gradual rollout with beta releases
+- Comprehensive migration documentation
+- Active community engagement

@@ -1,80 +1,88 @@
-# TODO List for vexy-mkdocs-output-as-input Improvements
+# TODO List for vexy-mkdocs-output-as-input
 
-## Phase 1: Code Quality & Architecture
-- [ ] Upgrade all type hints to Python 3.12+ standards (use `T | None` instead of `Optional[T]`)
-- [ ] Create type aliases in a new `types.py` module
-- [ ] Implement comprehensive loguru logging throughout the codebase
-- [ ] Add structured logging with performance metrics
-- [ ] Refactor plugin.py into modular architecture (core.py, extractors.py, processors.py, etc.)
-- [ ] Add configuration options: exclude_patterns, process_only, output_format
-- [ ] Implement caching mechanism for extracted content
-- [ ] Add parallel processing support with configurable workers
-- [ ] Create progress bar for large file processing
+## Phase 1: Documentation Setup
+- [x] Create src_docs/ directory structure
+- [x] Create src_docs/index.md with landing page content
+- [x] Create src_docs/getting-started.md with installation guide
+- [x] Create src_docs/configuration.md with detailed config reference
+- [x] Create src_docs/examples.md with real-world examples
+- [x] Create src_docs/api.md for API documentation
+- [x] Create src_docs/development.md with contributing guide
+- [x] Create src_docs/faq.md with common questions
+- [x] Create src_docs/troubleshooting.md with solutions
+- [x] Update mkdocs.yml for src_docs source
+- [x] Configure Material theme advanced features
+- [x] Set up mkdocstrings for API docs
+- [x] Add custom CSS for branding
+- [x] Configure social cards generation
+- [x] Create build script to output docs/ from src_docs/
 
-## Phase 2: Testing Improvements
+## Phase 2: Code Quality Improvements
+- [ ] Replace logging with loguru throughout codebase
+- [ ] Add structured logging with context
+- [ ] Implement custom exception classes
+- [ ] Add graceful error degradation
+- [ ] Create user-friendly error messages
+- [ ] Split plugin.py into modular components
+- [ ] Create core.py for main logic
+- [ ] Create parser.py for HTML parsing
+- [ ] Create writer.py for file writing
+- [ ] Create config.py for configuration
+- [ ] Create utils.py for utilities
+- [ ] Add comprehensive type hints
+- [ ] Implement asyncio for parallel processing
+- [ ] Add progress indicators
+- [ ] Implement file caching mechanism
+
+## Phase 3: Test Suite Enhancement
+- [ ] Add integration tests for full pipeline
+- [ ] Add theme compatibility tests
+- [ ] Add large site performance tests
+- [ ] Add multi-plugin interaction tests
+- [ ] Add malformed HTML handling tests
+- [ ] Add Unicode handling tests
+- [ ] Add symlink handling tests
+- [ ] Add concurrent processing tests
+- [ ] Implement property-based tests with hypothesis
+- [ ] Add test fixtures for common scenarios
+- [ ] Create test data generators
+- [ ] Add performance benchmarks
+- [ ] Create visual regression tests
 - [ ] Achieve 100% code coverage
-- [ ] Add edge case tests for HTML extraction
-- [ ] Create integration tests with real MkDocs projects
-- [ ] Add performance benchmark tests
-- [ ] Implement property-based testing with hypothesis
-- [ ] Create comprehensive test fixtures for different scenarios
-- [ ] Add tests for all configuration combinations
-- [ ] Test error recovery and graceful degradation
-- [ ] Add tests for malformed HTML handling
-
-## Phase 3: Documentation Excellence
-- [ ] Integrate mkdocstrings for API documentation generation
-- [ ] Write comprehensive docstrings for all public methods
-- [ ] Create step-by-step tutorials for common use cases
-- [ ] Write troubleshooting guide with solutions
-- [ ] Add performance tuning guide
-- [ ] Create migration guide from similar plugins
-- [ ] Build example projects (Hugo, Jekyll, custom pipelines)
-- [ ] Add architecture diagrams and flowcharts
-- [ ] Include code examples in all documentation
 
 ## Phase 4: Feature Enhancements
-- [ ] Implement smart content extraction with auto-detection
-- [ ] Add Jinja2 template support for output customization
-- [ ] Create plugin extension system
-- [ ] Enhance CLI tool with interactive mode
-- [ ] Add batch processing capabilities to CLI
-- [ ] Implement validation commands
-- [ ] Add performance profiling to CLI
-- [ ] Support multiple output formats (markdown, html, json)
-- [ ] Add custom extractor plugin support
+- [ ] Add output_format configuration option
+- [ ] Add custom_processors support
+- [ ] Add exclude_patterns option
+- [ ] Add parallel_processing toggle
+- [ ] Add cache_enabled option
+- [ ] Add template_engine support
+- [ ] Implement smart content extraction
+- [ ] Add auto-detection for different themes
+- [ ] Improve link resolution logic
+- [ ] Add interactive CLI mode
+- [ ] Create configuration wizard
+- [ ] Add preview mode
+- [ ] Add batch processing support
 
-## Phase 5: Quality Assurance
-- [ ] Set up matrix testing for Python 3.8-3.12
-- [ ] Test compatibility with MkDocs 1.4-1.6
-- [ ] Add automated performance regression tests
-- [ ] Integrate security scanning with Bandit
-- [ ] Set up pre-commit hooks for all quality checks
-- [ ] Add spell checking for documentation
-- [ ] Implement link validation
-- [ ] Create automated screenshot generation
+## Phase 5: Developer Experience
+- [ ] Create VS Code extension scaffolding
+- [ ] Add syntax highlighting for cousin files
+- [ ] Create configuration snippets
+- [ ] Design reusable GitHub Actions workflow
+- [ ] Set up automated testing matrix
+- [ ] Add performance regression detection
+- [ ] Design plugin extension API
+- [ ] Implement hook system
+- [ ] Create event-driven architecture
+- [ ] Document plugin chaining
 
-## Phase 6: Documentation Site (src_docs)
-- [ ] Configure advanced MkDocs Material features
-- [ ] Set up search with proper configuration
-- [ ] Add version selector with mike
-- [ ] Create custom CSS for better styling
-- [ ] Add JavaScript enhancements
-- [ ] Set up Google Analytics
-- [ ] Configure social cards
-- [ ] Add feedback widgets
-- [ ] Create announcement bar for updates
-
-## Immediate Tasks (Priority 1)
-- [ ] Fix import statements to use modern Python
-- [ ] Add loguru logging to all major functions
-- [ ] Write missing tests for uncovered code paths
-- [ ] Update all docstrings to Google style
-- [ ] Build initial documentation site with current content
-
-## Quick Wins
-- [ ] Add progress indicator for file processing
-- [ ] Improve error messages with helpful context
-- [ ] Add --version flag to CLI
-- [ ] Create a simple example project
-- [ ] Add contributing guidelines
+## Phase 6: Performance and Scalability
+- [ ] Implement content hash-based cache
+- [ ] Add incremental processing
+- [ ] Support distributed caching
+- [ ] Add S3 bucket output support
+- [ ] Add Azure Blob storage support
+- [ ] Add Google Cloud Storage support
+- [ ] Optimize memory usage
+- [ ] Add streaming for large files

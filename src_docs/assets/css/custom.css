@@ -1,0 +1,199 @@
+/* Custom CSS for MkDocs Output as Input Documentation */
+
+/* Custom color scheme */
+:root {
+  --md-primary-fg-color: #4051b5;
+  --md-primary-fg-color--light: #5a6fd8;
+  --md-primary-fg-color--dark: #303f9f;
+  --md-accent-fg-color: #526cfe;
+}
+
+/* Hero section on landing page */
+.md-typeset .hero {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.md-typeset .hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+/* Feature cards */
+.md-typeset .grid.cards {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.md-typeset .grid.cards > div {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.md-typeset .grid.cards > div:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Code examples */
+.md-typeset .highlight {
+  margin: 1rem 0;
+}
+
+/* Configuration table styling */
+.md-typeset table.configuration-table {
+  width: 100%;
+  margin: 2rem 0;
+}
+
+.md-typeset table.configuration-table th {
+  background-color: var(--md-primary-fg-color);
+  color: white;
+  font-weight: 600;
+}
+
+.md-typeset table.configuration-table td:first-child {
+  font-family: var(--md-code-font-family);
+  font-weight: 600;
+  color: var(--md-primary-fg-color);
+}
+
+/* API documentation enhancements */
+.md-typeset .doc-class {
+  border-left: 4px solid var(--md-primary-fg-color);
+  padding-left: 1rem;
+  margin: 2rem 0;
+}
+
+.md-typeset .doc-method {
+  background-color: var(--md-code-bg-color);
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  margin: 1rem 0;
+}
+
+/* Version selector */
+.md-version__current {
+  font-weight: 600;
+}
+
+/* Custom admonitions */
+.md-typeset .admonition.example,
+.md-typeset details.example {
+  border-color: #00c853;
+}
+
+.md-typeset .admonition.example > .admonition-title,
+.md-typeset details.example > summary {
+  background-color: #00c85333;
+  border-color: #00c853;
+}
+
+.md-typeset .admonition.example > .admonition-title::before,
+.md-typeset details.example > summary::before {
+  background-color: #00c853;
+  -webkit-mask-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.58 16.58l-6.29-6.29L1 11.59l7.58 7.58L23 4.75 21.71 3.46z"/></svg>');
+  mask-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.58 16.58l-6.29-6.29L1 11.59l7.58 7.58L23 4.75 21.71 3.46z"/></svg>');
+}
+
+/* Terminal output styling */
+.md-typeset .terminal {
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  overflow-x: auto;
+  font-family: var(--md-code-font-family);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.md-typeset .terminal::before {
+  content: "$ ";
+  color: #569cd6;
+}
+
+/* Responsive improvements */
+@media screen and (max-width: 768px) {
+  .md-typeset .hero h1 {
+    font-size: 2rem;
+  }
+  
+  .md-typeset .grid.cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Print styles */
+@media print {
+  .md-typeset .grid.cards {
+    display: block;
+  }
+  
+  .md-typeset .grid.cards > div {
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--md-primary-fg-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--md-default-bg-color);
+}
+
+/* Animation for feature icons */
+.md-typeset .grid.cards .material-icons {
+  font-size: 3rem;
+  color: var(--md-primary-fg-color);
+  transition: transform 0.3s;
+}
+
+.md-typeset .grid.cards > div:hover .material-icons {
+  transform: scale(1.1);
+}
+
+/* Footer enhancement */
+.md-footer-meta {
+  background-color: var(--md-primary-fg-color--dark);
+}
+
+/* Search result highlighting */
+.md-search-result mark {
+  background-color: var(--md-accent-fg-color);
+  color: white;
+  padding: 0 0.25rem;
+}
+
+/* Copy button enhancement */
+.md-clipboard {
+  transition: color 0.2s;
+}
+
+.md-clipboard:hover {
+  color: var(--md-accent-fg-color);
+}
+
+/* Navigation tabs */
+.md-tabs__link--active {
+  font-weight: 600;
+  border-bottom: 2px solid var(--md-accent-fg-color);
+}
