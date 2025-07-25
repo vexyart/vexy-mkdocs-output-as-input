@@ -1,4 +1,7 @@
+# this_file: mkdocs.yml
 ---
+docs_dir: src_docs/docs
+site_dir: docs
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true

@@ -1,28 +1,43 @@
+# this_file: src/mkdocs_output_as_input/cli.py
 """CLI tool for standalone processing of HTML files with output-as-input plugin."""
 
 import argparse
-import logging
 import sys
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 import yaml
 from bs4 import BeautifulSoup
+from loguru import logger
 
-logger = logging.getLogger(__name__)
+# Type aliases
+type FrontmatterDict = dict[str, Any]
+type ElementList = str | list[str]
 
 
 def setup_logging(verbose: bool = False) -> None:
-    """Set up logging configuration."""
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
+    """Set up logging configuration.
+    
+    Args:
+        verbose: Enable verbose logging with debug level
+    """
+    # Remove default logger and add custom format
+    logger.remove()
+    
+    level = "DEBUG" if verbose else "INFO"
+    format_string = (
+        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+        "<level>{level: <8}</level> | "
+        "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+        "<level>{message}</level>"
+    ) if verbose else (
+        "<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | <level>{message}</level>"
     )
+    
+    logger.add(sys.stderr, format=format_string, level=level)
 
 
-def extract_frontmatter(content: str) -> tuple[dict[str, Any], str]:
+def extract_frontmatter(content: str) -> tuple[FrontmatterDict, str]:
     """Extract YAML frontmatter from Markdown content.
     
     Args:
@@ -31,7 +46,7 @@ def extract_frontmatter(content: str) -> tuple[dict[str, Any], str]:
     Returns:
         Tuple of (frontmatter dict, content without frontmatter)
     """
-    frontmatter: dict[str, Any] = {}
+    frontmatter: FrontmatterDict = {}
     body = content
 
     if content.startswith("---\n"):
@@ -42,19 +57,19 @@ def extract_frontmatter(content: str) -> tuple[dict[str, Any], str]:
                 frontmatter = yaml.safe_load(fm_text) or {}
                 body = content[end_idx + 5:]  # Skip past the closing ---\n
         except yaml.YAMLError as e:
-            logger.warning(f"Failed to parse frontmatter: {e}")
+            logger.warning("Failed to parse frontmatter", error=str(e))
 
     return frontmatter, body
 
 
 def process_html(
     html_content: str,
-    html_element: Union[str, list[str]] = "main",
+    html_element: ElementList = "main",
     target_tag: str = "article",
     preserve_links: bool = False,
     minify: bool = False,
     prettify: bool = False,
-) -> Optional[str]:
+) -> str | None:
     """Process HTML content and extract specified element.
     
     Args:
@@ -86,7 +101,7 @@ def process_html(
                 extracted_elements.append(element)
 
     if not extracted_elements:
-        logger.error(f"No elements matching {html_element} found in HTML")
+        logger.error("No elements found", selectors=html_element)
         return None
 
     # If multiple elements, wrap them in a container
@@ -135,7 +150,7 @@ def process_html(
 def process_file(
     input_path: Path,
     output_path: Path,
-    html_element: Union[str, list[str]] = "main",
+    html_element: ElementList = "main",
     target_tag: str = "article",
     include_frontmatter: bool = True,
     preserve_links: bool = False,
@@ -154,26 +169,26 @@ def process_file(
         minify: Whether to minify the output
         prettify: Whether to prettify the output
     """
-    logger.info(f"Processing {input_path} -> {output_path}")
+    logger.info("Processing file", input=str(input_path), output=str(output_path))
 
     # Read input file
     try:
         content = input_path.read_text(encoding="utf-8")
     except Exception as e:
-        logger.error(f"Failed to read {input_path}: {e}")
+        logger.error("Failed to read input file", path=input_path, error=str(e))
         raise
 
     # Check if there's a corresponding markdown file for frontmatter
-    frontmatter: dict[str, Any] = {}
+    frontmatter: FrontmatterDict = {}
     if include_frontmatter:
         md_path = input_path.with_suffix(".md")
         if md_path.exists():
             try:
                 md_content = md_path.read_text(encoding="utf-8")
                 frontmatter, _ = extract_frontmatter(md_content)
-                logger.debug(f"Extracted frontmatter from {md_path}")
+                logger.debug("Extracted frontmatter", path=md_path, keys=list(frontmatter.keys()))
             except Exception as e:
-                logger.warning(f"Failed to read markdown file {md_path}: {e}")
+                logger.warning("Failed to read markdown file", path=md_path, error=str(e))
 
     # Process HTML
     processed_html = process_html(
@@ -204,14 +219,16 @@ def process_file(
             f.write(processed_html)
             f.write("\n")
 
-        logger.info(f"Successfully wrote {output_path}")
+        logger.info("Successfully wrote output file", path=output_path, size=output_path.stat().st_size)
     except Exception as e:
-        logger.error(f"Failed to write {output_path}: {e}")
+        logger.error("Failed to write output file", path=output_path, error=str(e))
         raise
 
 
 def main() -> int:
     """Main CLI entry point."""
+    from mkdocs_output_as_input import __version__
+    
     parser = argparse.ArgumentParser(
         description="Process HTML files with MkDocs Output as Input plugin logic",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -229,6 +246,13 @@ Examples:
   # Process with link preservation and prettify
   mkdocs-output-as-input process input.html output.md --preserve-links --prettify
         """,
+    )
+    
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"mkdocs-output-as-input {__version__}",
+        help="Show version information and exit",
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -305,7 +329,7 @@ Examples:
             )
             return 0
     except Exception as e:
-        logger.error(f"Error: {e}")
+        logger.error("Command failed", error=str(e))
         return 1
 
     return 0

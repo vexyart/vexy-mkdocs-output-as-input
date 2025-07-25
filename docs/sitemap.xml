@@ -2,6 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://vexyart.github.io/vexy-mkdocs-output-as-input/</loc>
-         <lastmod>2025-07-14</lastmod>
+         <lastmod>2025-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://vexyart.github.io/vexy-mkdocs-output-as-input/api/</loc>
+         <lastmod>2025-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://vexyart.github.io/vexy-mkdocs-output-as-input/configuration/</loc>
+         <lastmod>2025-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://vexyart.github.io/vexy-mkdocs-output-as-input/examples/</loc>
+         <lastmod>2025-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://vexyart.github.io/vexy-mkdocs-output-as-input/getting-started/</loc>
+         <lastmod>2025-07-25</lastmod>
     </url>
 </urlset>

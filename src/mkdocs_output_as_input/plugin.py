@@ -1,18 +1,22 @@
-# this_file: more/mkdocs-plugins/vexy-mkdocs-output-as-input/src/mkdocs_output_as_input/plugin.py
+# this_file: src/mkdocs_output_as_input/plugin.py
 """MkDocs plugin that captures HTML output and creates cousin Markdown files."""
 
-import logging
 import re
+import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 from bs4 import BeautifulSoup
+from loguru import logger
 from mkdocs.config import config_options
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.pages import Page
 
-logger = logging.getLogger(__name__)
+# Type aliases for better readability
+type FrontmatterDict = dict[str, Any]
+type ConfigDict = dict[str, Any]
+type FileInfo = dict[str, Any]
 
 
 class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
@@ -40,38 +44,58 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
     def __init__(self) -> None:
         """Initialize the plugin."""
         super().__init__()
-        self.source_files: dict[str, dict[str, Any]] = {}
-        self.site_dir: Optional[Path] = None
-        self.docs_dir: Optional[Path] = None
+        self.source_files: dict[str, FileInfo] = {}
+        self.site_dir: Path | None = None
+        self.docs_dir: Path | None = None
 
-    def on_config(self, config: dict[str, Any]) -> dict[str, Any]:  # type: ignore[override]
-        """Store site and docs directories and validate configuration."""
+    def on_config(self, config: ConfigDict) -> ConfigDict:  # type: ignore[override]
+        """Store site and docs directories and validate configuration.
+        
+        Args:
+            config: MkDocs configuration dictionary
+            
+        Returns:
+            The unmodified configuration dictionary
+            
+        Raises:
+            ValueError: If mutually exclusive options are enabled
+        """
         self.site_dir = Path(config["site_dir"])
         self.docs_dir = Path(config["docs_dir"])
 
         # Validate mutually exclusive options
         if self.config["minify"] and self.config["prettify"]:
-            raise ValueError("OutputAsInput: Cannot use both 'minify' and 'prettify' options")
+            raise ValueError("Cannot use both 'minify' and 'prettify' options")
 
         if self.config["verbose"]:
-            logger.info(f"OutputAsInput: site_dir={self.site_dir}, docs_dir={self.docs_dir}")
+            logger.info("Plugin initialized", site_dir=self.site_dir, docs_dir=self.docs_dir)
+            logger.debug("Configuration", config=self.config)
 
         return config
 
-    def on_page_read_source(self, page: Page, config: dict[str, Any]) -> Optional[str]:  # type: ignore[override]  # noqa: ARG002
-        """Capture source Markdown content and frontmatter."""
+    def on_page_read_source(self, page: Page, config: ConfigDict) -> str | None:  # type: ignore[override]  # noqa: ARG002
+        """Capture source Markdown content and frontmatter.
+        
+        Args:
+            page: MkDocs page object
+            config: MkDocs configuration dictionary
+            
+        Returns:
+            None to let MkDocs continue with original content
+        """
         src_path = page.file.src_path
+        start_time = time.time()
 
         # Read the full source content
         try:
             with open(page.file.abs_src_path, encoding="utf-8") as f:  # type: ignore[arg-type]
                 content = f.read()
         except Exception as e:
-            logger.error(f"OutputAsInput: Failed to read {src_path}: {e}")
+            logger.error("Failed to read source file", path=src_path, error=str(e))
             return None
 
         # Extract frontmatter if present
-        frontmatter: dict[str, Any] = {}
+        frontmatter: FrontmatterDict = {}
         if content.startswith("---\n"):
             try:
                 end_idx = content.find("\n---\n", 4)
@@ -79,7 +103,7 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
                     fm_text = content[4:end_idx]
                     frontmatter = yaml.safe_load(fm_text) or {}
             except yaml.YAMLError as e:
-                logger.warning(f"OutputAsInput: Failed to parse frontmatter in {src_path}: {e}")
+                logger.warning("Failed to parse frontmatter", path=src_path, error=str(e))
 
         self.source_files[src_path] = {
             "frontmatter": frontmatter,
@@ -87,36 +111,70 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
         }
 
         if self.config["verbose"]:
-            logger.info(f"OutputAsInput: Captured source {src_path}")
+            elapsed = time.time() - start_time
+            logger.debug(
+                "Captured source file",
+                path=src_path,
+                frontmatter_keys=list(frontmatter.keys()),
+                elapsed_ms=f"{elapsed * 1000:.2f}"
+            )
 
         return None  # Let MkDocs continue with original content
 
-    def on_post_build(self, config: dict[str, Any]) -> None:  # type: ignore[override]  # noqa: ARG002
-        """After build, process all HTML files and create cousin Markdowns."""
+    def on_post_build(self, config: ConfigDict) -> None:  # type: ignore[override]  # noqa: ARG002
+        """After build, process all HTML files and create cousin Markdowns.
+        
+        Args:
+            config: MkDocs configuration dictionary
+        """
         if self.docs_dir is None:
-            logger.error("OutputAsInput: docs_dir not set")
+            logger.error("docs_dir not set, cannot process files")
             return
+        
+        start_time = time.time()
         stage_dir = self.docs_dir.parent / self.config["stage_dir"]
 
         # Create stage directory
         stage_dir.mkdir(exist_ok=True)
-        logger.info(f"OutputAsInput: Creating stage directory at {stage_dir}")
+        logger.info("Creating stage directory", path=stage_dir)
 
         # Process each tracked source file
         processed = 0
-        for src_path, file_info in self.source_files.items():
-            try:
-                self._process_file(src_path, file_info, stage_dir)
-                processed += 1
-            except Exception as e:
-                logger.error(f"OutputAsInput: Failed to process {src_path}: {e}")
+        failed = 0
+        
+        with logger.contextualize(stage_dir=str(stage_dir)):
+            for src_path, file_info in self.source_files.items():
+                try:
+                    self._process_file(src_path, file_info, stage_dir)
+                    processed += 1
+                except Exception as e:
+                    failed += 1
+                    logger.error(
+                        "Failed to process file",
+                        path=src_path,
+                        error=str(e),
+                        exc_info=self.config["verbose"]
+                    )
 
-        logger.info(f"OutputAsInput: Processed {processed}/{len(self.source_files)} files")
+        elapsed = time.time() - start_time
+        logger.info(
+            "Post-build processing complete",
+            processed=processed,
+            failed=failed,
+            total=len(self.source_files),
+            elapsed_s=f"{elapsed:.2f}"
+        )
 
-    def _process_file(self, src_path: str, file_info: dict[str, Any], stage_dir: Path) -> None:
-        """Process a single file: extract HTML and create cousin Markdown."""
+    def _process_file(self, src_path: str, file_info: FileInfo, stage_dir: Path) -> None:
+        """Process a single file: extract HTML and create cousin Markdown.
+        
+        Args:
+            src_path: Path to the source Markdown file
+            file_info: Dictionary containing file metadata and frontmatter
+            stage_dir: Directory where cousin files will be created
+        """
         if self.site_dir is None:
-            logger.error("OutputAsInput: site_dir not set")
+            logger.error("site_dir not set")
             return
 
         # Determine HTML output path
@@ -134,8 +192,11 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
             full_html_path = self.site_dir / html_path
 
         if not full_html_path.exists():
-            logger.warning(f"OutputAsInput: No HTML output found for {src_path}")
-            logger.warning(f"OutputAsInput: Looked for: {full_html_path}")
+            logger.warning(
+                "No HTML output found",
+                source=src_path,
+                expected_path=str(full_html_path)
+            )
             return
 
         # Read and parse HTML
@@ -143,7 +204,7 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
             with open(full_html_path, encoding="utf-8") as f:
                 html_content = f.read()
         except Exception as e:
-            logger.error(f"OutputAsInput: Failed to read HTML {full_html_path}: {e}")
+            logger.error("Failed to read HTML file", path=full_html_path, error=str(e))
             return
 
         soup = BeautifulSoup(html_content, "html.parser")
@@ -167,8 +228,9 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
 
         if not extracted_elements:
             logger.warning(
-                f"OutputAsInput: No elements matching {self.config['html_element']} "
-                f"found in {full_html_path}"
+                "No matching elements found",
+                selectors=self.config['html_element'],
+                html_file=str(full_html_path)
             )
             return
 
@@ -228,7 +290,7 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
                 f.write("\n")
 
             if self.config["verbose"]:
-                logger.info(f"OutputAsInput: Created cousin file {cousin_path}")
+                logger.debug("Created cousin file", path=cousin_path, size=cousin_path.stat().st_size)
 
         except Exception as e:
-            logger.error(f"OutputAsInput: Failed to write cousin file {cousin_path}: {e}")
+            logger.error("Failed to write cousin file", path=cousin_path, error=str(e))
