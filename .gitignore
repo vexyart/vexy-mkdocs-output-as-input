@@ -68,5 +68,5 @@ coverage.xml
 site/
 .cache/
 
-# setuptools-scm
+# hatch-vcs generated version file
 src/mkdocs_output_as_input/_version.py

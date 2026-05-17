@@ -76,6 +76,9 @@ mkdocs-output-as-input = "mkdocs_output_as_input.cli:main"
 [tool.hatch.version]
 source = "vcs"
 
+[tool.hatch.build.hooks.vcs]
+version-file = "src/mkdocs_output_as_input/_version.py"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/mkdocs_output_as_input"]
 
