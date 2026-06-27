@@ -194,7 +194,7 @@ extra:
       link: https://pypi.org/project/vexy-mkdocs-output-as-input/
   analytics:
     provider: google
-    property: G-XXXXXXXXXX
+    property: GTM-5WNRV8Z7
     feedback:
       title: Was this page helpful?
       ratings:
