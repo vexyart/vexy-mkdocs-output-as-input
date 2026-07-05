@@ -1,5 +1,20 @@
 # TODO List for vexy-mkdocs-output-as-input
 
+## 2026 Modernization (done)
+- [x] Add GitHub Actions CI (test matrix 3.12/3.13, MkDocs 1.5/1.6 compat, lint job, codecov)
+- [x] Add release workflow (build + PyPI trusted publishing + GitHub Release) and dependabot
+- [x] Align minimum Python to 3.12 (code uses PEP 695 `type` statements)
+- [x] Add end-to-end MkDocs-build integration test on a fixture site
+- [x] Document runtime dependencies + BeautifulSoup4 parser choice (`DEPENDENCIES.md`)
+- [x] Add `use-cases.md` (Webflow / Docusaurus / plain-HTML pipelines)
+
+## Bigger ideas (parked)
+- [ ] Evaluate `selectolax` as a lighter alternative to BeautifulSoup4 for simple
+      tag extraction (~1 MB saving), gated on retaining full CSS-selector support.
+- [ ] Harden `preserve_links` beyond the current root-relative heuristic (resolve
+      links relative to each page's depth in the tree).
+- [ ] Add a coverage report artifact / badge refresh once CI is live.
+
 ## Phase 1: Documentation Setup
 - [x] Create src_docs/ directory structure
 - [x] Create src_docs/index.md with landing page content

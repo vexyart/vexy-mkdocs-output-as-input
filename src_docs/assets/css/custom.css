@@ -122,7 +122,7 @@
   .md-typeset .hero h1 {
     font-size: 2rem;
   }
-  
+
   .md-typeset .grid.cards {
     grid-template-columns: 1fr;
   }
@@ -133,7 +133,7 @@
   .md-typeset .grid.cards {
     display: block;
   }
-  
+
   .md-typeset .grid.cards > div {
     page-break-inside: avoid;
     margin-bottom: 1rem;

@@ -19,7 +19,7 @@ The most straightforward use case - capturing rendered documentation:
     site_name: My Documentation
     theme:
       name: material
-    
+
     plugins:
       - search
       - output-as-input
@@ -32,13 +32,13 @@ The most straightforward use case - capturing rendered documentation:
     title: User Guide
     category: documentation
     ---
-    
+
     # User Guide
-    
+
     Welcome to our **user guide**!
-    
+
     ## Getting Started
-    
+
     1. Install the software
     2. Configure settings
     3. Start using
@@ -51,7 +51,7 @@ The most straightforward use case - capturing rendered documentation:
     title: User Guide
     category: documentation
     ---
-    
+
     <article class="md-content">
       <h1 id="user-guide">User Guide</h1>
       <p>Welcome to our <strong>user guide</strong>!</p>
@@ -115,7 +115,7 @@ Using MkDocs for initial processing, then Hugo for final site:
 
     ```yaml
     site_name: Technical Documentation
-    
+
     plugins:
       - output-as-input:
           stage_dir: hugo/content
@@ -129,7 +129,7 @@ Using MkDocs for initial processing, then Hugo for final site:
     #!/bin/bash
     # Build with MkDocs first
     mkdocs build
-    
+
     # Then build with Hugo
     cd hugo
     hugo --minify
@@ -156,7 +156,7 @@ Feed processed content to Jekyll:
     ---
     layout: default
     ---
-    
+
     <div class="post-content">
       {% include processed/{{ page.path }} %}
     </div>
@@ -191,7 +191,7 @@ Process with MkDocs, enhance with Eleventy:
     ```javascript
     module.exports = function(eleventyConfig) {
       eleventyConfig.addPassthroughCopy("src/processed");
-      
+
       return {
         dir: {
           input: "src",
@@ -230,7 +230,7 @@ Process documentation in multiple languages:
           stage_dir: processed
           html_element: main
           verbose: true
-    
+
     # Use with mkdocs-static-i18n
     plugins:
       - i18n:
@@ -269,9 +269,9 @@ Extract API documentation for custom rendering:
     title: API Reference
     api_version: 2.0
     ---
-    
+
     # API Reference
-    
+
     ::: mkdocs_output_as_input.plugin.OutputAsInputPlugin
         options:
           show_source: true
@@ -304,26 +304,26 @@ Combine content from multiple sources:
     import os
     from pathlib import Path
     import yaml
-    
+
     # Read all cousin files
     stage_dir = Path("stage")
     aggregated = []
-    
+
     for md_file in stage_dir.rglob("*.md"):
         with open(md_file) as f:
             content = f.read()
-            
+
         # Parse frontmatter
         if content.startswith("---\n"):
             _, fm, body = content.split("---\n", 2)
             metadata = yaml.safe_load(fm)
-            
+
             aggregated.append({
                 "path": str(md_file),
                 "metadata": metadata,
                 "content": body
             })
-    
+
     # Create aggregated index
     with open("aggregated_index.json", "w") as f:
         json.dump(aggregated, f, indent=2)
@@ -334,10 +334,10 @@ Combine content from multiple sources:
     ```bash
     # Build with MkDocs
     mkdocs build
-    
+
     # Aggregate content
     python aggregate_content.py
-    
+
     # Use aggregated content in your workflow
     ```
 
@@ -403,14 +403,14 @@ Maintain versioned documentation:
     ```bash
     #!/bin/bash
     VERSION=$1
-    
+
     # Build current version
     mkdocs build
-    
+
     # Archive processed files
     mkdir -p "versions/$VERSION"
     cp -r stage/* "versions/$VERSION/"
-    
+
     # Update version index
     echo "- $VERSION" >> versions/index.txt
     ```
@@ -440,21 +440,21 @@ Process for SEO optimization:
     ```python
     from bs4 import BeautifulSoup
     import frontmatter
-    
+
     def enhance_seo(filepath):
         post = frontmatter.load(filepath)
         soup = BeautifulSoup(post.content, 'html.parser')
-        
+
         # Add meta descriptions
         if 'description' in post:
-            meta = soup.new_tag('meta', 
-                name='description', 
+            meta = soup.new_tag('meta',
+                name='description',
                 content=post['description'])
             soup.insert(0, meta)
-        
+
         # Update content
         post.content = str(soup)
-        
+
         # Save enhanced version
         with open(filepath, 'w') as f:
             f.write(frontmatter.dumps(post))
@@ -472,21 +472,21 @@ import frontmatter
 
 def build_search_index():
     index = []
-    
+
     for file in Path("stage").rglob("*.md"):
         post = frontmatter.load(file)
         soup = BeautifulSoup(post.content, 'html.parser')
-        
+
         # Extract text content
         text = soup.get_text(separator=' ', strip=True)
-        
+
         index.append({
             "title": post.get("title", ""),
             "path": str(file.relative_to("stage")),
             "content": text[:200] + "...",  # Preview
             "tags": post.get("tags", [])
         })
-    
+
     with open("search_index.json", "w") as f:
         json.dump(index, f)
 ```
@@ -561,7 +561,7 @@ Here's a complete example of a documentation pipeline:
     ```yaml
     site_name: My Project Documentation
     site_url: https://docs.example.com
-    
+
     theme:
       name: material
       palette:
@@ -569,7 +569,7 @@ Here's a complete example of a documentation pipeline:
       features:
         - navigation.sections
         - navigation.expand
-    
+
     plugins:
       - search
       - output-as-input:
@@ -577,7 +577,7 @@ Here's a complete example of a documentation pipeline:
           html_element: .md-content__inner
           preserve_links: true
           verbose: true
-    
+
     markdown_extensions:
       - admonition
       - codehilite
@@ -590,16 +590,16 @@ Here's a complete example of a documentation pipeline:
     ```bash
     #!/bin/bash
     set -e
-    
+
     echo "Building with MkDocs..."
     mkdocs build
-    
+
     echo "Post-processing content..."
     python scripts/post_process.py
-    
+
     echo "Building final site..."
     # Your final build step here
-    
+
     echo "Done!"
     ```
 

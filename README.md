@@ -105,9 +105,9 @@ plugins:
    title: My Page
    author: Jane Doe
    ---
-   
+
    # My Page
-   
+
    This is my content with **markdown**.
    ```
 
@@ -125,7 +125,7 @@ plugins:
    title: My Page
    author: Jane Doe
    ---
-   
+
    <article class="md-content">
      <h1>My Page</h1>
      <p>This is my content with <strong>markdown</strong>.</p>

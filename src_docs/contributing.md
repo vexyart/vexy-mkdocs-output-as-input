@@ -107,11 +107,11 @@ def process_files(
     verbose: bool = False
 ) -> Optional[int]:
     """Process multiple files.
-    
+
     Args:
         paths: List of file paths to process
         verbose: Enable verbose logging
-        
+
     Returns:
         Number of files processed, or None on error
     """
@@ -180,16 +180,16 @@ If your change affects user-facing functionality:
    ```markdown
    ## Description
    Brief description of changes
-   
+
    ## Related Issue
    Fixes #123
-   
+
    ## Type of Change
    - [ ] Bug fix
    - [ ] New feature
    - [ ] Documentation update
    - [ ] Performance improvement
-   
+
    ## Checklist
    - [ ] Tests pass
    - [ ] Documentation updated
@@ -216,10 +216,10 @@ def test_custom_processor(plugin, temp_dir):
     plugin.config["custom_processor"] = lambda x: x.upper()
     test_file = temp_dir / "test.md"
     test_file.write_text("# hello world")
-    
+
     # Act: Execute the functionality
     plugin.process_file(test_file)
-    
+
     # Assert: Verify the results
     output = (temp_dir / "stage" / "test.md").read_text()
     assert "HELLO WORLD" in output
@@ -238,18 +238,18 @@ def extract_content(
     selector: str = "main"
 ) -> Optional[str]:
     """Extract content from HTML using CSS selector.
-    
+
     Args:
         html: HTML document as string
         selector: CSS selector to match elements
-        
+
     Returns:
         Extracted HTML content or None if not found
-        
+
     Raises:
         ValueError: If selector is empty
         ParseError: If HTML is malformed
-        
+
     Example:
         >>> html = "<main><p>Content</p></main>"
         >>> extract_content(html, "main")

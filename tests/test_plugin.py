@@ -1,4 +1,4 @@
-# this_file: more/mkdocs-plugins/vexy-mkdocs-output-as-input/tests/test_plugin.py
+# this_file: tests/test_plugin.py
 """Tests for vexy-mkdocs-output-as-input plugin."""
 
 import tempfile
@@ -63,12 +63,13 @@ class TestOutputAsInputPlugin:
         assert plugin.site_dir == Path(mkdocs_config["site_dir"])
         assert plugin.docs_dir == Path(mkdocs_config["docs_dir"])
 
-    def test_on_page_read_source_captures_content(self, plugin, mkdocs_config, temp_dir):  # noqa: ARG002
+    def test_on_page_read_source_captures_content(self, plugin, mkdocs_config, temp_dir):
         """Test capturing source content and frontmatter."""
         # Create a source file
         docs_dir = Path(mkdocs_config["docs_dir"])
         src_file = docs_dir / "test.md"
-        src_file.write_text("""---
+        src_file.write_text(
+            """---
 title: Test Page
 category: Testing
 ---
@@ -76,7 +77,8 @@ category: Testing
 # Test Content
 
 This is test content.
-""")
+"""
+        )
 
         # Create mock page
         mock_file = Mock()
@@ -95,7 +97,7 @@ This is test content.
         assert plugin.source_files["test.md"]["frontmatter"]["title"] == "Test Page"
         assert plugin.source_files["test.md"]["frontmatter"]["category"] == "Testing"
 
-    def test_on_page_read_source_no_frontmatter(self, plugin, mkdocs_config, temp_dir):  # noqa: ARG002
+    def test_on_page_read_source_no_frontmatter(self, plugin, mkdocs_config, temp_dir):
         """Test capturing content without frontmatter."""
         # Create a source file without frontmatter
         docs_dir = Path(mkdocs_config["docs_dir"])
@@ -117,7 +119,7 @@ This is test content.
         assert "no_fm.md" in plugin.source_files
         assert plugin.source_files["no_fm.md"]["frontmatter"] == {}
 
-    def test_on_post_build_creates_cousin_files(self, plugin, mkdocs_config, temp_dir):  # noqa: ARG002
+    def test_on_post_build_creates_cousin_files(self, plugin, mkdocs_config, temp_dir):
         """Test creating cousin files after build."""
         # Setup directories
         docs_dir = Path(mkdocs_config["docs_dir"])
@@ -125,18 +127,21 @@ This is test content.
 
         # Create source file
         src_file = docs_dir / "test.md"
-        src_file.write_text("""---
+        src_file.write_text(
+            """---
 title: Test Page
 ---
 
 # Test Content
-""")
+"""
+        )
 
         # Create corresponding HTML output
         html_dir = site_dir / "test"
         html_dir.mkdir(parents=True)
         html_file = html_dir / "index.html"
-        html_file.write_text("""<!DOCTYPE html>
+        html_file.write_text(
+            """<!DOCTYPE html>
 <html>
 <head><title>Test</title></head>
 <body>
@@ -145,7 +150,8 @@ title: Test Page
 <p>This is the HTML output.</p>
 </main>
 </body>
-</html>""")
+</html>"""
+        )
 
         # Simulate page capture
         plugin.on_config(mkdocs_config)
@@ -194,13 +200,15 @@ title: Test Page
         html_dir = site_dir / "test"
         html_dir.mkdir(parents=True)
         html_file = html_dir / "index.html"
-        html_file.write_text("""<!DOCTYPE html>
+        html_file.write_text(
+            """<!DOCTYPE html>
 <html>
 <head><title>Test</title></head>
 <body>
 <div>No main element here</div>
 </body>
-</html>""")
+</html>"""
+        )
 
         # Setup plugin
         plugin.on_config(mkdocs_config)
@@ -226,14 +234,16 @@ title: Test Page
 
         # Create HTML with div instead of main
         html_file = site_dir / "test.html"
-        html_file.write_text("""<!DOCTYPE html>
+        html_file.write_text(
+            """<!DOCTYPE html>
 <html>
 <body>
 <div class="content">
 <h1>Test</h1>
 </div>
 </body>
-</html>""")
+</html>"""
+        )
 
         plugin.on_config(mkdocs_config)
         plugin.source_files["test.md"] = {
@@ -254,18 +264,20 @@ title: Test Page
         assert '<section class="content">' in content
         assert "<h1>Test</h1>" in content
 
-    def test_invalid_yaml_frontmatter(self, plugin, mkdocs_config, temp_dir):  # noqa: ARG002
+    def test_invalid_yaml_frontmatter(self, plugin, mkdocs_config, temp_dir):
         """Test handling invalid YAML frontmatter."""
         # Create source with invalid YAML
         docs_dir = Path(mkdocs_config["docs_dir"])
         src_file = docs_dir / "invalid.md"
-        src_file.write_text("""---
+        src_file.write_text(
+            """---
 title: Test
 invalid: [unclosed
 ---
 
 # Content
-""")
+"""
+        )
 
         # Create mock page
         mock_file = Mock()
@@ -322,14 +334,16 @@ invalid: [unclosed
 
         # Create HTML output
         html_file = site_dir / "test.html"
-        html_file.write_text("""<!DOCTYPE html>
+        html_file.write_text(
+            """<!DOCTYPE html>
 <html>
 <body>
 <main>
 <h1>Test Page</h1>
 </main>
 </body>
-</html>""")
+</html>"""
+        )
 
         plugin.on_config(mkdocs_config)
 
@@ -370,7 +384,8 @@ invalid: [unclosed
 
         # Create HTML output with absolute links
         html_file = site_dir / "test.html"
-        html_file.write_text("""<!DOCTYPE html>
+        html_file.write_text(
+            """<!DOCTYPE html>
 <html>
 <body>
 <main>
@@ -380,7 +395,8 @@ invalid: [unclosed
 <a href="https://example.com">External</a>
 </main>
 </body>
-</html>""")
+</html>"""
+        )
 
         plugin.on_config(mkdocs_config)
         plugin.source_files["test.md"] = {
@@ -409,7 +425,8 @@ invalid: [unclosed
 
         # Create HTML with multiple elements
         html_file = site_dir / "test.html"
-        html_file.write_text("""<!DOCTYPE html>
+        html_file.write_text(
+            """<!DOCTYPE html>
 <html>
 <body>
 <header><h1>Header Content</h1></header>
@@ -417,7 +434,8 @@ invalid: [unclosed
 <aside><p>Sidebar Content</p></aside>
 <footer><p>Footer Content</p></footer>
 </body>
-</html>""")
+</html>"""
+        )
 
         plugin.on_config(mkdocs_config)
         plugin.source_files["test.md"] = {
@@ -448,7 +466,8 @@ invalid: [unclosed
 
         # Create HTML with CSS selectable elements
         html_file = site_dir / "test.html"
-        html_file.write_text("""<!DOCTYPE html>
+        html_file.write_text(
+            """<!DOCTYPE html>
 <html>
 <body>
 <div class="content">
@@ -458,7 +477,8 @@ invalid: [unclosed
 </div>
 <div class="sidebar">Sidebar</div>
 </body>
-</html>""")
+</html>"""
+        )
 
         plugin.on_config(mkdocs_config)
         plugin.source_files["test.md"] = {
@@ -489,7 +509,8 @@ invalid: [unclosed
 
         # Create HTML with whitespace
         html_file = site_dir / "test.html"
-        html_file.write_text("""<!DOCTYPE html>
+        html_file.write_text(
+            """<!DOCTYPE html>
 <html>
 <body>
 <main>
@@ -500,7 +521,8 @@ invalid: [unclosed
     </p>
 </main>
 </body>
-</html>""")
+</html>"""
+        )
 
         plugin.on_config(mkdocs_config)
         plugin.source_files["test.md"] = {
@@ -517,7 +539,7 @@ invalid: [unclosed
         content = cousin_file.read_text()
 
         # Should have no newlines in HTML (except final newline)
-        lines = content.strip().split('\n')
+        lines = content.strip().split("\n")
         assert len(lines) == 1  # Only one line of HTML
         # Check that spaces between tags are removed
         assert "><" in content
@@ -531,7 +553,9 @@ invalid: [unclosed
 
         # Create compact HTML
         html_file = site_dir / "test.html"
-        html_file.write_text("""<html><body><main><h1>Title</h1><p>Content</p></main></body></html>""")
+        html_file.write_text(
+            """<html><body><main><h1>Title</h1><p>Content</p></main></body></html>"""
+        )
 
         plugin.on_config(mkdocs_config)
         plugin.source_files["test.md"] = {
@@ -548,7 +572,7 @@ invalid: [unclosed
         content = cousin_file.read_text()
 
         # Should have proper indentation
-        lines = content.strip().split('\n')
+        lines = content.strip().split("\n")
         assert len(lines) > 1  # Multiple lines
         assert any(" <" in line for line in lines)  # Has indentation
 
@@ -560,19 +584,21 @@ invalid: [unclosed
         with pytest.raises(ValueError, match="Cannot use both 'minify' and 'prettify'"):
             plugin.on_config(mkdocs_config)
 
-    def test_verbose_logging(self, plugin, mkdocs_config, temp_dir):  # noqa: ARG002
+    def test_verbose_logging(self, plugin, mkdocs_config, temp_dir):
         """Test verbose logging output."""
         plugin.config["verbose"] = True
 
         # Create a source file
         docs_dir = Path(mkdocs_config["docs_dir"])
         src_file = docs_dir / "verbose_test.md"
-        src_file.write_text("""---
+        src_file.write_text(
+            """---
 title: Verbose Test
 ---
 
 # Content
-""")
+"""
+        )
 
         # Create mock page
         mock_file = Mock()
@@ -589,11 +615,12 @@ title: Verbose Test
         # Should have logged source capture
         assert "verbose_test.md" in plugin.source_files
 
-    def test_frontmatter_yaml_error_edge_case(self, plugin, mkdocs_config, temp_dir):  # noqa: ARG002
+    def test_frontmatter_yaml_error_edge_case(self, plugin, mkdocs_config, temp_dir):
         """Test handling of complex YAML errors in frontmatter."""
         docs_dir = Path(mkdocs_config["docs_dir"])
         src_file = docs_dir / "yaml_error.md"
-        src_file.write_text("""---
+        src_file.write_text(
+            """---
 title: Test
 nested:
   - item1
@@ -602,7 +629,8 @@ invalid_structure: {unclosed: [bracket, missing_comma list
 ---
 
 # Content
-""")
+"""
+        )
 
         # Create mock page
         mock_file = Mock()
@@ -643,11 +671,13 @@ invalid_structure: {unclosed: [bracket, missing_comma list
 
         # Test README.md -> index.html mapping
         readme_html = site_dir / "index.html"
-        readme_html.write_text("""<html>
+        readme_html.write_text(
+            """<html>
 <body>
 <main><h1>README</h1></main>
 </body>
-</html>""")
+</html>"""
+        )
 
         plugin.source_files["README.md"] = {
             "frontmatter": {"title": "README"},
@@ -690,12 +720,14 @@ invalid_structure: {unclosed: [bracket, missing_comma list
 
         # Create HTML without the target element
         html_file = site_dir / "test.html"
-        html_file.write_text("""<html>
+        html_file.write_text(
+            """<html>
 <body>
 <div>No main element here</div>
 <section>Different elements</section>
 </body>
-</html>""")
+</html>"""
+        )
 
         plugin.on_config(mkdocs_config)
         plugin.source_files["test.md"] = {
@@ -718,7 +750,8 @@ invalid_structure: {unclosed: [bracket, missing_comma list
 
         # Create HTML with various link types
         html_file = site_dir / "test.html"
-        html_file.write_text("""<html>
+        html_file.write_text(
+            """<html>
 <body>
 <main>
 <h1>Test Page</h1>
@@ -732,7 +765,8 @@ invalid_structure: {unclosed: [bracket, missing_comma list
 <a href="mailto:test@example.com">Email</a>
 </main>
 </body>
-</html>""")
+</html>"""
+        )
 
         plugin.on_config(mkdocs_config)
         plugin.config["preserve_links"] = True
@@ -820,7 +854,8 @@ invalid_structure: {unclosed: [bracket, missing_comma list
 
         # Create HTML with multiple main elements
         html_file = site_dir / "test.html"
-        html_file.write_text("""<html>
+        html_file.write_text(
+            """<html>
 <body>
 <main class="first">
 <h1>First Main</h1>
@@ -829,7 +864,8 @@ invalid_structure: {unclosed: [bracket, missing_comma list
 <h1>Second Main</h1>
 </main>
 </body>
-</html>""")
+</html>"""
+        )
 
         plugin.on_config(mkdocs_config)
         plugin.source_files["test.md"] = {

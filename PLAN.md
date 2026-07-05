@@ -3,6 +3,12 @@
 ## Project Overview
 This MkDocs plugin captures rendered HTML output and creates "cousin" Markdown files with original frontmatter and extracted HTML content. The project is well-structured but needs improvements in documentation, code quality, and test coverage.
 
+> **2026 modernization status:** CI/release/dependabot workflows added, Python
+> baseline aligned to 3.12+, end-to-end MkDocs-build integration test added,
+> `DEPENDENCIES.md` and `use-cases.md` written, ruff/black/mypy clean. Remaining
+> aspirational phases below are unscheduled; see `TODO.md` "Bigger ideas" for the
+> shortlist actually worth pursuing next.
+
 ## Phase 1: Documentation Setup and Structure (Priority: HIGH)
 
 ### 1.1 Create MkDocs Documentation Structure

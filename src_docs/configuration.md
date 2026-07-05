@@ -21,8 +21,8 @@ plugins:
 
 ### `stage_dir`
 
-**Type:** `string`  
-**Default:** `"stage"`  
+**Type:** `string`
+**Default:** `"stage"`
 **Description:** Directory name for output files (relative to project root)
 
 The `stage_dir` option specifies where the cousin files will be created. This directory is created automatically if it doesn't exist.
@@ -57,8 +57,8 @@ The `stage_dir` option specifies where the cousin files will be created. This di
 
 ### `html_element`
 
-**Type:** `string` or `list[string]`  
-**Default:** `"main"`  
+**Type:** `string` or `list[string]`
+**Default:** `"main"`
 **Description:** HTML element(s) to extract from the rendered page
 
 This option determines which part of the rendered HTML to extract. You can specify:
@@ -90,7 +90,7 @@ This option determines which part of the rendered HTML to extract. You can speci
     ```yaml
     plugins:
       - output-as-input:
-          html_element: 
+          html_element:
             - main
             - aside.sidebar
     ```
@@ -105,7 +105,7 @@ This option determines which part of the rendered HTML to extract. You can speci
 
 !!! info "Theme Compatibility"
     Different MkDocs themes use different HTML structures:
-    
+
     - **Material**: `.md-content__inner` or `article`
     - **ReadTheDocs**: `div.rst-content`
     - **MkDocs default**: `main` or `div.col-md-9`
@@ -114,8 +114,8 @@ This option determines which part of the rendered HTML to extract. You can speci
 
 ### `target_tag`
 
-**Type:** `string`  
-**Default:** `"article"`  
+**Type:** `string`
+**Default:** `"article"`
 **Description:** HTML tag to use in the output file
 
 This option specifies what HTML tag should wrap the extracted content in the cousin file. The extracted element's tag is replaced with this value.
@@ -153,8 +153,8 @@ This option specifies what HTML tag should wrap the extracted content in the cou
 
 ### `include_frontmatter`
 
-**Type:** `boolean`  
-**Default:** `true`  
+**Type:** `boolean`
+**Default:** `true`
 **Description:** Whether to include YAML frontmatter in output files
 
 Controls whether the original YAML frontmatter from source files is preserved in the cousin files.
@@ -182,8 +182,8 @@ Controls whether the original YAML frontmatter from source files is preserved in
 
 ### `preserve_links`
 
-**Type:** `boolean`  
-**Default:** `false`  
+**Type:** `boolean`
+**Default:** `false`
 **Description:** Convert absolute links to relative links
 
 When enabled, this option converts root-relative links (starting with `/`) to relative links (starting with `./`).
@@ -214,8 +214,8 @@ When enabled, this option converts root-relative links (starting with `/`) to re
 
 ### `minify`
 
-**Type:** `boolean`  
-**Default:** `false`  
+**Type:** `boolean`
+**Default:** `false`
 **Description:** Minify HTML output by removing unnecessary whitespace
 
 When enabled, removes extra whitespace, newlines, and spaces between HTML tags to create compact output.
@@ -252,8 +252,8 @@ plugins:
 
 ### `prettify`
 
-**Type:** `boolean`  
-**Default:** `false`  
+**Type:** `boolean`
+**Default:** `false`
 **Description:** Format HTML output with proper indentation
 
 When enabled, formats the HTML with proper indentation and line breaks for better readability.
@@ -292,8 +292,8 @@ plugins:
 
 ### `verbose`
 
-**Type:** `boolean`  
-**Default:** `false`  
+**Type:** `boolean`
+**Default:** `false`
 **Description:** Enable detailed logging for debugging
 
 When enabled, the plugin logs detailed information about its operations, which is helpful for debugging.
@@ -345,7 +345,7 @@ plugins:
 plugins:
   - output-as-input:
       stage_dir: hugo/content
-      html_element: 
+      html_element:
         - article
         - aside.toc
       include_frontmatter: true
@@ -395,7 +395,7 @@ You can use MkDocs inheritance to have different configurations for different en
 
     ```yaml
     INHERIT: mkdocs-base.yml
-    
+
     plugins:
       - output-as-input:
           stage_dir: stage
@@ -406,7 +406,7 @@ You can use MkDocs inheritance to have different configurations for different en
 
     ```yaml
     INHERIT: mkdocs-base.yml
-    
+
     plugins:
       - output-as-input:
           stage_dir: stage-dev

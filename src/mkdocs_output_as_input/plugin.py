@@ -32,6 +32,9 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
 
     config_scheme = (
         ("stage_dir", config_options.Type(str, default="stage")),
+        # `html_element` is a CSS selector (e.g. "main", ".content", "#article"),
+        # not merely a tag name. It may also be a list of selectors, in which case
+        # every match is extracted and wrapped in a single `target_tag` container.
         ("html_element", config_options.Type((str, list), default="main")),
         ("target_tag", config_options.Type(str, default="article")),
         ("include_frontmatter", config_options.Type(bool, default=True)),
@@ -50,13 +53,13 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
 
     def on_config(self, config: ConfigDict) -> ConfigDict:  # type: ignore[override]
         """Store site and docs directories and validate configuration.
-        
+
         Args:
             config: MkDocs configuration dictionary
-            
+
         Returns:
             The unmodified configuration dictionary
-            
+
         Raises:
             ValueError: If mutually exclusive options are enabled
         """
@@ -75,11 +78,17 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
 
     def on_page_read_source(self, page: Page, config: ConfigDict) -> str | None:  # type: ignore[override]  # noqa: ARG002
         """Capture source Markdown content and frontmatter.
-        
+
+        This is the first half of a deliberate two-hook split. Frontmatter must be
+        read from the *source* Markdown while it is still available (during the
+        build), because by the time MkDocs has rendered the site the original YAML
+        block is gone. We only record it here; the rendered HTML does not yet exist,
+        so extraction is deferred to :meth:`on_post_build`.
+
         Args:
             page: MkDocs page object
             config: MkDocs configuration dictionary
-            
+
         Returns:
             None to let MkDocs continue with original content
         """
@@ -116,21 +125,27 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
                 "Captured source file",
                 path=src_path,
                 frontmatter_keys=list(frontmatter.keys()),
-                elapsed_ms=f"{elapsed * 1000:.2f}"
+                elapsed_ms=f"{elapsed * 1000:.2f}",
             )
 
         return None  # Let MkDocs continue with original content
 
     def on_post_build(self, config: ConfigDict) -> None:  # type: ignore[override]  # noqa: ARG002
         """After build, process all HTML files and create cousin Markdowns.
-        
+
+        This is the second half of the two-hook split. It runs once the whole site
+        has been rendered to ``site_dir``, which is the earliest point at which the
+        final HTML for every page exists on disk. It pairs the frontmatter captured
+        in :meth:`on_page_read_source` with the freshly rendered HTML and writes the
+        cousin files.
+
         Args:
             config: MkDocs configuration dictionary
         """
         if self.docs_dir is None:
             logger.error("docs_dir not set, cannot process files")
             return
-        
+
         start_time = time.time()
         stage_dir = self.docs_dir.parent / self.config["stage_dir"]
 
@@ -141,7 +156,7 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
         # Process each tracked source file
         processed = 0
         failed = 0
-        
+
         with logger.contextualize(stage_dir=str(stage_dir)):
             for src_path, file_info in self.source_files.items():
                 try:
@@ -153,7 +168,7 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
                         "Failed to process file",
                         path=src_path,
                         error=str(e),
-                        exc_info=self.config["verbose"]
+                        exc_info=self.config["verbose"],
                     )
 
         elapsed = time.time() - start_time
@@ -162,12 +177,12 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
             processed=processed,
             failed=failed,
             total=len(self.source_files),
-            elapsed_s=f"{elapsed:.2f}"
+            elapsed_s=f"{elapsed:.2f}",
         )
 
     def _process_file(self, src_path: str, file_info: FileInfo, stage_dir: Path) -> None:
         """Process a single file: extract HTML and create cousin Markdown.
-        
+
         Args:
             src_path: Path to the source Markdown file
             file_info: Dictionary containing file metadata and frontmatter
@@ -193,9 +208,7 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
 
         if not full_html_path.exists():
             logger.warning(
-                "No HTML output found",
-                source=src_path,
-                expected_path=str(full_html_path)
+                "No HTML output found", source=src_path, expected_path=str(full_html_path)
             )
             return
 
@@ -229,8 +242,8 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
         if not extracted_elements:
             logger.warning(
                 "No matching elements found",
-                selectors=self.config['html_element'],
-                html_file=str(full_html_path)
+                selectors=self.config["html_element"],
+                html_file=str(full_html_path),
             )
             return
 
@@ -241,10 +254,12 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
                 container.append(elem.extract())
             target_element = container
         else:
-            target_element = extracted_elements[0]  # type: ignore[assignment]
+            target_element = extracted_elements[0]
             # Transform to target tag if different and single selector was a tag name
-            if (isinstance(self.config["html_element"], str) and 
-                self.config["target_tag"] != self.config["html_element"]):
+            if (
+                isinstance(self.config["html_element"], str)
+                and self.config["target_tag"] != self.config["html_element"]
+            ):
                 target_element.name = self.config["target_tag"]
 
         # Handle link preservation if requested
@@ -278,9 +293,9 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
                     html_output = str(target_element)
                     # Remove newlines and compress multiple spaces
                     html_output = html_output.replace("\n", "")
-                    html_output = re.sub(r'\s+', ' ', html_output)
+                    html_output = re.sub(r"\s+", " ", html_output)
                     # Remove spaces between tags
-                    html_output = re.sub(r'>\s+<', '><', html_output)
+                    html_output = re.sub(r">\s+<", "><", html_output)
                 elif self.config["prettify"]:
                     html_output = target_element.prettify()
                 else:
@@ -290,7 +305,9 @@ class OutputAsInputPlugin(BasePlugin):  # type: ignore[type-arg,no-untyped-call]
                 f.write("\n")
 
             if self.config["verbose"]:
-                logger.debug("Created cousin file", path=cousin_path, size=cousin_path.stat().st_size)
+                logger.debug(
+                    "Created cousin file", path=cousin_path, size=cousin_path.stat().st_size
+                )
 
         except Exception as e:
             logger.error("Failed to write cousin file", path=cousin_path, error=str(e))

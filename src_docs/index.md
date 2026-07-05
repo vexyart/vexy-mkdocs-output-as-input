@@ -140,19 +140,19 @@ Fine-tune every aspect of the extraction and output process.
 <div class="grid cards" markdown>
 
 -   **Multi-Stage Pipelines**
-    
+
     Process with MkDocs first, then feed to Hugo or Jekyll for final publication.
 
 -   **Content Extraction**
-    
+
     Extract just the article content without theme navigation and UI elements.
 
 -   **Documentation Reuse**
-    
+
     Share processed content across multiple documentation sites.
 
 -   **Custom Templates**
-    
+
     Apply your own templates to MkDocs-processed content.
 
 </div>

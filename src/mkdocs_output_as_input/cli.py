@@ -10,6 +10,8 @@ import yaml
 from bs4 import BeautifulSoup
 from loguru import logger
 
+from mkdocs_output_as_input import __version__
+
 # Type aliases
 type FrontmatterDict = dict[str, Any]
 type ElementList = str | list[str]
@@ -17,32 +19,36 @@ type ElementList = str | list[str]
 
 def setup_logging(verbose: bool = False) -> None:
     """Set up logging configuration.
-    
+
     Args:
         verbose: Enable verbose logging with debug level
     """
     # Remove default logger and add custom format
     logger.remove()
-    
+
     level = "DEBUG" if verbose else "INFO"
     format_string = (
-        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
-        "<level>{level: <8}</level> | "
-        "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
-        "<level>{message}</level>"
-    ) if verbose else (
-        "<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | <level>{message}</level>"
+        (
+            "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+            "<level>{level: <8}</level> | "
+            "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+            "<level>{message}</level>"
+        )
+        if verbose
+        else (
+            "<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | <level>{message}</level>"
+        )
     )
-    
+
     logger.add(sys.stderr, format=format_string, level=level)
 
 
 def extract_frontmatter(content: str) -> tuple[FrontmatterDict, str]:
     """Extract YAML frontmatter from Markdown content.
-    
+
     Args:
         content: The markdown content
-        
+
     Returns:
         Tuple of (frontmatter dict, content without frontmatter)
     """
@@ -55,7 +61,7 @@ def extract_frontmatter(content: str) -> tuple[FrontmatterDict, str]:
             if end_idx > 0:
                 fm_text = content[4:end_idx]
                 frontmatter = yaml.safe_load(fm_text) or {}
-                body = content[end_idx + 5:]  # Skip past the closing ---\n
+                body = content[end_idx + 5 :]  # Skip past the closing ---\n
         except yaml.YAMLError as e:
             logger.warning("Failed to parse frontmatter", error=str(e))
 
@@ -71,7 +77,7 @@ def process_html(
     prettify: bool = False,
 ) -> str | None:
     """Process HTML content and extract specified element.
-    
+
     Args:
         html_content: The HTML content to process
         html_element: CSS selector for element to extract
@@ -79,7 +85,7 @@ def process_html(
         preserve_links: Whether to preserve relative links
         minify: Whether to minify the output
         prettify: Whether to prettify the output
-        
+
     Returns:
         Processed HTML string or None if element not found
     """
@@ -111,7 +117,7 @@ def process_html(
             container.append(elem.extract())
         target_element = container
     else:
-        target_element = extracted_elements[0]  # type: ignore[assignment]
+        target_element = extracted_elements[0]
         # Transform to target tag if different
         # For single selector, check if it's not a CSS selector
         if target_tag != target_element.name:
@@ -158,7 +164,7 @@ def process_file(
     prettify: bool = False,
 ) -> None:
     """Process a single file.
-    
+
     Args:
         input_path: Path to input HTML file
         output_path: Path to output Markdown file
@@ -219,7 +225,9 @@ def process_file(
             f.write(processed_html)
             f.write("\n")
 
-        logger.info("Successfully wrote output file", path=output_path, size=output_path.stat().st_size)
+        logger.info(
+            "Successfully wrote output file", path=output_path, size=output_path.stat().st_size
+        )
     except Exception as e:
         logger.error("Failed to write output file", path=output_path, error=str(e))
         raise
@@ -227,8 +235,6 @@ def process_file(
 
 def main() -> int:
     """Main CLI entry point."""
-    from mkdocs_output_as_input import __version__
-    
     parser = argparse.ArgumentParser(
         description="Process HTML files with MkDocs Output as Input plugin logic",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -236,18 +242,18 @@ def main() -> int:
 Examples:
   # Process a single file
   mkdocs-output-as-input process input.html output.md
-  
+
   # Process with custom element and tag
   mkdocs-output-as-input process input.html output.md --html-element div --target-tag section
-  
+
   # Process without frontmatter
   mkdocs-output-as-input process input.html output.md --no-frontmatter
-  
+
   # Process with link preservation and prettify
   mkdocs-output-as-input process input.html output.md --preserve-links --prettify
         """,
     )
-    
+
     parser.add_argument(
         "--version",
         action="version",
@@ -293,7 +299,8 @@ Examples:
         help="Prettify HTML output",
     )
     process_parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Enable verbose logging",
     )

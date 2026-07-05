@@ -50,7 +50,7 @@ python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install in development mode
-pip install -e ".[dev,test,docs]"
+pip install -e ".[dev,docs]"
 
 # Install pre-commit hooks
 pre-commit install
@@ -106,12 +106,12 @@ Follow these coding standards:
 # Use type hints
 def process_file(self, path: Path, config: dict[str, Any]) -> None:
     """Process a single file.
-    
+
     Args:
         path: Path to the file
         config: Configuration dictionary
     """
-    
+
 # Use descriptive names
 html_element = config["html_element"]  # Good
 he = config["html_element"]  # Bad
@@ -143,20 +143,20 @@ logger.error(f"Failed to process {src_path}: {e}")
 ```python
 class TestOutputAsInputPlugin:
     """Test cases for OutputAsInputPlugin."""
-    
+
     @pytest.fixture
     def plugin(self):
         """Create a plugin instance."""
         return OutputAsInputPlugin()
-    
+
     def test_feature(self, plugin):
         """Test specific feature."""
         # Arrange
         plugin.config["option"] = "value"
-        
+
         # Act
         result = plugin.method()
-        
+
         # Assert
         assert result == expected
 ```
@@ -228,10 +228,10 @@ def test_new_feature(plugin, temp_dir):
     # Create test files
     test_file = temp_dir / "test.md"
     test_file.write_text("# Test")
-    
+
     # Test feature
     result = plugin.process(test_file)
-    
+
     # Verify results
     assert result.exists()
 ```
@@ -249,7 +249,7 @@ def test_integration_with_material_theme(temp_dir):
         "theme": {"name": "material"},
         "plugins": ["output-as-input"]
     }
-    
+
     # Run build
     # Verify output
 ```
@@ -260,13 +260,13 @@ def test_integration_with_material_theme(temp_dir):
 def test_large_site_performance(benchmark):
     """Test performance with large sites."""
     plugin = OutputAsInputPlugin()
-    
+
     # Create many files
     files = create_test_files(1000)
-    
+
     # Benchmark processing
     result = benchmark(plugin.process_all, files)
-    
+
     # Assert performance
     assert result.avg < 0.1  # 100ms average
 ```
@@ -293,15 +293,15 @@ graph TD
 ```python
 class OutputAsInputPlugin(BasePlugin):
     """Main plugin class."""
-    
+
     config_scheme = (...)  # Configuration
-    
+
     def on_config(self, config):
         """Initialize plugin."""
-        
+
     def on_page_read_source(self, page, config):
         """Capture source files."""
-        
+
     def on_post_build(self, config):
         """Process and create output."""
 ```
@@ -406,10 +406,10 @@ def profile_plugin():
     """Profile plugin performance."""
     profiler = cProfile.Profile()
     profiler.enable()
-    
+
     # Run plugin
     plugin.on_post_build(config)
-    
+
     profiler.disable()
     stats = pstats.Stats(profiler)
     stats.sort_stats('cumulative')

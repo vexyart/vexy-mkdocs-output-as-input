@@ -1,6 +1,12 @@
-# this_file: more/vexy-mkdocs-output-as-input-refactored/.pre-commit-config.yaml
+# this_file: .pre-commit-config.yaml
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+
+# Skip generated / vendored artifacts: the built docs site, the codetoprompt
+# snapshot, and the src_docs staging/intermediate copies are regenerated, not
+# hand-edited.
+exclude: '^(docs/|llms\.txt$|src_docs/stage/|src_docs/docs/)'
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -8,6 +14,9 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        # MkDocs configs use !!python/name: tags that the safe loader rejects;
+        # --unsafe checks syntax only, which is all we need here.
+        args: [--unsafe]
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: check-toml
@@ -18,15 +27,20 @@ repos:
     rev: v3.15.0
     hooks:
       - id: pyupgrade
-        args: [--py39-plus]
+        args: [--py312-plus]
 
+  # Lint with ruff and format with black, matching the CI lint job exactly so
+  # the two never disagree (ruff-format and black can format differently).
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.11
+    rev: v0.8.4
     hooks:
       - id: ruff
         args: [--fix]
-      - id: ruff-format
 
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.6
@@ -35,9 +49,7 @@ repos:
         additional_dependencies:
           - tomli
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
-    hooks:
-      - id: mypy
-        additional_dependencies: [types-pyyaml, types-beautifulsoup4]
-        args: [--strict, --ignore-missing-imports]
+# Note: mypy is intentionally NOT a pre-commit hook. It needs the project's real
+# dependencies (mkdocs, etc.) to type-check correctly, which an isolated hook env
+# does not provide. The CI "lint" job runs `mypy src` in the installed
+# environment instead; run it locally with `mypy src` after `pip install -e .[dev]`.

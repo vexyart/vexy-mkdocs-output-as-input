@@ -80,7 +80,7 @@ markdown_extensions:
       permalink: true
       permalink_title: Anchor link to this section for reference
       toc_depth: 3
-  
+
   # Python Markdown Extensions
   - pymdownx.arithmatex:
       generic: true
@@ -122,6 +122,7 @@ nav:
   - Documentation:
     - Configuration: configuration.md
     - Examples: examples.md
+    - Use Cases: use-cases.md
     - API Reference: api.md
   - About:
     - License: https://github.com/vexyart/vexy-mkdocs-output-as-input/blob/main/LICENSE

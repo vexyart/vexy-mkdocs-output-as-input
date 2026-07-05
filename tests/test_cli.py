@@ -68,8 +68,8 @@ invalid: [unclosed
 
         assert result is not None
         assert '<article class="content">' in result
-        assert '<h1>Title</h1>' in result
-        assert '<p>Content</p>' in result
+        assert "<h1>Title</h1>" in result
+        assert "<p>Content</p>" in result
 
     def test_process_html_custom_element_and_tag(self):
         """Test processing with custom element and tag."""
@@ -85,7 +85,7 @@ invalid: [unclosed
 
         assert result is not None
         assert '<section id="content">' in result
-        assert '<h1>Title</h1>' in result
+        assert "<h1>Title</h1>" in result
 
     def test_process_html_element_not_found(self):
         """Test handling when element not found."""
@@ -145,13 +145,15 @@ invalid: [unclosed
         """Test basic file processing."""
         # Create input HTML file
         input_file = tmp_path / "input.html"
-        input_file.write_text("""<html>
+        input_file.write_text(
+            """<html>
 <body>
 <main>
 <h1>Test Page</h1>
 </main>
 </body>
-</html>""")
+</html>"""
+        )
 
         output_file = tmp_path / "output.md"
 
@@ -170,13 +172,15 @@ invalid: [unclosed
 
         # Create corresponding markdown file with frontmatter
         md_file = tmp_path / "page.md"
-        md_file.write_text("""---
+        md_file.write_text(
+            """---
 title: Test Page
 author: Test Author
 ---
 
 # Original content
-""")
+"""
+        )
 
         output_file = tmp_path / "output.md"
 
@@ -220,8 +224,9 @@ author: Test Author
 
         output_file = tmp_path / "output.md"
 
-        with patch("sys.argv", ["mkdocs-output-as-input", "process",
-                               str(input_file), str(output_file)]):
+        with patch(
+            "sys.argv", ["mkdocs-output-as-input", "process", str(input_file), str(output_file)]
+        ):
             result = main()
 
         assert result == 0
@@ -234,16 +239,23 @@ author: Test Author
 
         output_file = tmp_path / "output.md"
 
-        with patch("sys.argv", [
-            "mkdocs-output-as-input", "process",
-            str(input_file), str(output_file),
-            "--html-element", "div",
-            "--target-tag", "section",
-            "--no-frontmatter",
-            "--preserve-links",
-            "--prettify",
-            "--verbose"
-        ]):
+        with patch(
+            "sys.argv",
+            [
+                "mkdocs-output-as-input",
+                "process",
+                str(input_file),
+                str(output_file),
+                "--html-element",
+                "div",
+                "--target-tag",
+                "section",
+                "--no-frontmatter",
+                "--preserve-links",
+                "--prettify",
+                "--verbose",
+            ],
+        ):
             result = main()
 
         assert result == 0
@@ -258,11 +270,17 @@ author: Test Author
 
         output_file = tmp_path / "output.md"
 
-        with patch("sys.argv", [
-            "mkdocs-output-as-input", "process",
-            str(input_file), str(output_file),
-            "--minify", "--prettify"
-        ]):
+        with patch(
+            "sys.argv",
+            [
+                "mkdocs-output-as-input",
+                "process",
+                str(input_file),
+                str(output_file),
+                "--minify",
+                "--prettify",
+            ],
+        ):
             result = main()
 
         assert result == 1  # Should fail
@@ -279,8 +297,9 @@ author: Test Author
         input_file = tmp_path / "nonexistent.html"
         output_file = tmp_path / "output.md"
 
-        with patch("sys.argv", ["mkdocs-output-as-input", "process",
-                               str(input_file), str(output_file)]):
+        with patch(
+            "sys.argv", ["mkdocs-output-as-input", "process", str(input_file), str(output_file)]
+        ):
             result = main()
 
         assert result == 1
@@ -343,7 +362,7 @@ author: Test Author
         assert result is not None
         # CSS selectors don't transform the tag name
         assert '<div class="content">' in result
-        assert '<h1>Title</h1>' in result
+        assert "<h1>Title</h1>" in result
         assert '<p class="highlight">Important</p>' in result
 
     def test_process_html_tag_transformation_logic(self):
@@ -432,8 +451,9 @@ author: Test Author
         output_file = tmp_path / "output.md"
 
         # Test the main entry point behavior
-        with patch("sys.argv", ["mkdocs-output-as-input", "process",
-                               str(input_file), str(output_file)]):
+        with patch(
+            "sys.argv", ["mkdocs-output-as-input", "process", str(input_file), str(output_file)]
+        ):
             result = main()
             assert result == 0
 
@@ -444,8 +464,9 @@ author: Test Author
 
         output_file = tmp_path / "output.md"
 
-        with patch("sys.argv", ["mkdocs-output-as-input", "process",
-                               str(input_file), str(output_file)]):
+        with patch(
+            "sys.argv", ["mkdocs-output-as-input", "process", str(input_file), str(output_file)]
+        ):
             result = main()
 
         assert result == 0

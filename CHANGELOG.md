@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- GitHub Actions CI workflow (`ci.yml`): test matrix on Python 3.12/3.13 across Ubuntu and Windows, a MkDocs 1.5/1.6 compatibility job, a lint job (ruff + black + mypy), and codecov upload.
+- GitHub Actions release workflow (`release.yml`): builds, `twine check`s, publishes to PyPI via trusted publishing, and creates a GitHub Release on `v*` tags.
+- Dependabot configuration for pip and GitHub Actions updates.
+- End-to-end integration test (`tests/test_integration.py`) that runs a real MkDocs build on a fixture site and asserts the cousin file is produced with preserved frontmatter and rendered HTML.
+- `DEPENDENCIES.md` documenting each runtime dependency and the rationale for the `html.parser` BeautifulSoup4 backend.
+- `use-cases.md` documentation page with three worked pipelines (Webflow CMS import, Docusaurus migration, plain HTML archive).
 - Complete documentation pages for getting started, configuration, examples, and API reference
 - Additional test cases for edge cases, improving coverage to 91%+
 - Proper error handling for missing directories (docs_dir, site_dir)
@@ -22,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive test suite for CLI functionality
 
 ### Changed
+- Raised the minimum supported Python to 3.12 to match the code, which already uses PEP 695 `type` statements. Classifiers, ruff/black/mypy targets, and the pyupgrade hook now target 3.12+ (previously the metadata claimed 3.9 support the code could not honour).
+- Added explanatory docstrings on `on_page_read_source`/`on_post_build` describing why capture and extraction are split across two hooks, plus a comment noting that `html_element` is a CSS selector.
+- Corrected stale `this_file` path headers across source, tests, and config.
 - Replaced Black formatter with Ruff format in CI workflow
 - Enhanced type hints with proper type ignore comments for MkDocs compatibility
 - Improved error handling and logging throughout the plugin

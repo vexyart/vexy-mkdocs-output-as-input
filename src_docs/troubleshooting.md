@@ -112,10 +112,10 @@ Before diving into specific issues, run through this checklist:
    ```yaml
    # For Material theme
    html_element: .md-content__inner
-   
+
    # For ReadTheDocs
    html_element: .rst-content
-   
+
    # Generic fallback
    html_element: body
    ```
@@ -148,7 +148,7 @@ Before diving into specific issues, run through this checklist:
    ---
    title: Correct
    ---
-   
+
    Not this:
    ```
    ~~~
@@ -314,7 +314,7 @@ from bs4 import BeautifulSoup
 
 with open('site/index.html') as f:
     soup = BeautifulSoup(f.read(), 'html.parser')
-    
+
 # Test your selector
 element = soup.select('.md-content')
 print(f"Found: {len(element)} elements")

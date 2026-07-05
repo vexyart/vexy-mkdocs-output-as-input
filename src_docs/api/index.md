@@ -71,11 +71,11 @@ def on_config(self, config: dict[str, Any]) -> dict[str, Any]:
     """Store site and docs directories and validate configuration."""
     self.site_dir = Path(config["site_dir"])
     self.docs_dir = Path(config["docs_dir"])
-    
+
     # Validate mutually exclusive options
     if self.config["minify"] and self.config["prettify"]:
         raise ValueError("Cannot use both 'minify' and 'prettify'")
-    
+
     return config
 ```
 
@@ -85,8 +85,8 @@ Called when MkDocs reads a source file.
 
 ```python
 def on_page_read_source(
-    self, 
-    page: Page, 
+    self,
+    page: Page,
     config: dict[str, Any]
 ) -> Optional[str]:
     """Capture source Markdown content and frontmatter."""
@@ -119,39 +119,39 @@ import re
 
 class CustomOutputPlugin(OutputAsInputPlugin):
     """Extended plugin with custom processing."""
-    
+
     def __init__(self) -> None:
         super().__init__()
         self.custom_replacements = {}
-    
+
     def on_config(self, config: dict[str, Any]) -> dict[str, Any]:
         """Add custom configuration."""
         config = super().on_config(config)
-        
+
         # Add custom processing rules
         if "custom_replacements" in self.config:
             self.custom_replacements = self.config["custom_replacements"]
-        
+
         return config
-    
+
     def _process_file(
-        self, 
-        src_path: str, 
-        file_info: dict[str, Any], 
+        self,
+        src_path: str,
+        file_info: dict[str, Any],
         stage_dir: Path
     ) -> None:
         """Process with custom replacements."""
         # Call parent processing
         super()._process_file(src_path, file_info, stage_dir)
-        
+
         # Apply custom replacements
         cousin_path = stage_dir / src_path
         if cousin_path.exists():
             content = cousin_path.read_text()
-            
+
             for old, new in self.custom_replacements.items():
                 content = content.replace(old, new)
-            
+
             cousin_path.write_text(content)
 ```
 
@@ -162,19 +162,19 @@ Integrate with other MkDocs plugins:
 ```python
 class IntegratedOutputPlugin(OutputAsInputPlugin):
     """Plugin that integrates with other plugins."""
-    
+
     def on_page_content(
-        self, 
-        html: str, 
-        page: Page, 
-        config: dict[str, Any], 
+        self,
+        html: str,
+        page: Page,
+        config: dict[str, Any],
         files: Files
     ) -> str:
         """Hook into page content processing."""
         # Store additional metadata
         if page.file.src_path in self.source_files:
             self.source_files[page.file.src_path]["processed_html"] = html
-        
+
         return html
 ```
 
@@ -185,16 +185,16 @@ class IntegratedOutputPlugin(OutputAsInputPlugin):
 ```python
 def extract_frontmatter(content: str) -> tuple[dict[str, Any], str]:
     """Extract YAML frontmatter from Markdown content.
-    
+
     Args:
         content: Raw Markdown content
-        
+
     Returns:
         Tuple of (frontmatter_dict, remaining_content)
     """
     if not content.startswith("---\n"):
         return {}, content
-    
+
     try:
         end_idx = content.find("\n---\n", 4)
         if end_idx > 0:
@@ -204,7 +204,7 @@ def extract_frontmatter(content: str) -> tuple[dict[str, Any], str]:
             return frontmatter, remaining
     except yaml.YAMLError:
         pass
-    
+
     return {}, content
 ```
 
@@ -212,22 +212,22 @@ def extract_frontmatter(content: str) -> tuple[dict[str, Any], str]:
 
 ```python
 def process_html_content(
-    html: str, 
-    selector: str, 
+    html: str,
+    selector: str,
     target_tag: str
 ) -> Optional[str]:
     """Extract and transform HTML content.
-    
+
     Args:
         html: Full HTML document
         selector: CSS selector or tag name
         target_tag: Tag to use in output
-        
+
     Returns:
         Transformed HTML or None if not found
     """
     soup = BeautifulSoup(html, "html.parser")
-    
+
     # Try CSS selector first
     elements = soup.select(selector)
     if not elements:
@@ -235,10 +235,10 @@ def process_html_content(
         element = soup.find(selector)
         if element:
             elements = [element]
-    
+
     if not elements:
         return None
-    
+
     # Transform and return
     if len(elements) == 1:
         elements[0].name = target_tag
@@ -308,11 +308,11 @@ from mkdocs_output_as_input.plugin import OutputAsInputPlugin
 def test_plugin_configuration():
     """Test plugin configuration."""
     plugin = OutputAsInputPlugin()
-    
+
     # Test default configuration
     assert plugin.config["stage_dir"] == "stage"
     assert plugin.config["html_element"] == "main"
-    
+
     # Test custom configuration
     plugin.config["stage_dir"] = "custom"
     assert plugin.config["stage_dir"] == "custom"
@@ -366,16 +366,16 @@ def custom_build():
     """Build with custom processing."""
     # Load config
     config = load_config("mkdocs.yml")
-    
+
     # Add our plugin programmatically
     config["plugins"]["output-as-input"] = {
         "stage_dir": "processed",
         "verbose": True
     }
-    
+
     # Build
     build(config)
-    
+
     # Post-process
     process_stage_files(Path("processed"))
 

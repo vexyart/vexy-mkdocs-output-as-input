@@ -36,13 +36,13 @@ echo "Current version: $CURRENT_VERSION"
 calculate_next_version() {
     local version=$1
     local type=$2
-    
+
     # Remove 'v' prefix if present
     version=${version#v}
-    
+
     # Split version into parts
     IFS='.' read -r major minor patch <<< "$version"
-    
+
     case $type in
         major)
             major=$((major + 1))
@@ -61,7 +61,7 @@ calculate_next_version() {
             exit 1
             ;;
     esac
-    
+
     echo "v$major.$minor.$patch"
 }
 

@@ -8,9 +8,10 @@ This is an MkDocs plugin called `vexy-mkdocs-output-as-input` that captures rend
 ## Development Commands
 
 ### Setup & Installation
+> Requires Python 3.12+ (the plugin uses PEP 695 `type` aliases).
 ```bash
 # Install development dependencies
-uv pip install -e ".[dev,test,docs]"
+uv pip install -e ".[dev,docs]"
 
 # Install pre-commit hooks
 pre-commit install

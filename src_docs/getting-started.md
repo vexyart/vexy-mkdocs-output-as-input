@@ -11,7 +11,7 @@ This guide will help you get up and running with the MkDocs Output as Input plug
 
 Before installing the plugin, ensure you have:
 
-- **Python 3.8+** installed on your system
+- **Python 3.12+** installed on your system
 - **MkDocs 1.4+** installed (`pip install mkdocs`)
 - A working MkDocs project (or create one with `mkdocs new my-project`)
 
@@ -123,7 +123,7 @@ MkDocs converts this to HTML with your theme's styling:
 ```html
 <main class="md-content">
   <h1 id="example-page">Example Page</h1>
-  <p>This is a simple example with <strong>bold text</strong> and 
+  <p>This is a simple example with <strong>bold text</strong> and
      <a href="https://example.com">link</a>.</p>
   <h2 id="features">Features</h2>
   <ul>
@@ -148,7 +148,7 @@ tags: [tutorial, example]
 
 <article class="md-content">
   <h1 id="example-page">Example Page</h1>
-  <p>This is a simple example with <strong>bold text</strong> and 
+  <p>This is a simple example with <strong>bold text</strong> and
      <a href="https://example.com">link</a>.</p>
   <h2 id="features">Features</h2>
   <ul>
