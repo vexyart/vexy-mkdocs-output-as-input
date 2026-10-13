@@ -6,37 +6,48 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Complete configuration reference for the MkDocs Output as Input plugin">
+        <meta name="description" content="MkDocs plugin that captures HTML output and creates cousin Markdown files with original frontmatter">
       
       
       
-        <link rel="canonical" href="https://vexyart.github.io/vexy-mkdocs-output-as-input/configuration/">
+        <link rel="canonical" href="https://vexy.dev/vexy-mkdocs-output-as-input/configuration/">
       
       
-        <link rel="prev" href="../getting-started/">
+        <link rel="prev" href="../quickstart/">
       
       
-        <link rel="next" href="../examples/">
+        <link rel="next" href="../cli/">
       
-      
-      <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
-    
-    
-      
-        <title>Configuration - MkDocs Output as Input Plugin</title>
-      
-    
-    
-      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
       
       
-
+      
+      
+        
+        
+        
+          <link rel="icon" href="../assets/icon.png">
+        
+      
+      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-materialx-10.1.8">
+    
+    
+      
+        <title>Configuration - vexy-mkdocs-output-as-input</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.314bbef5.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.a45159b5.min.css">
+      
+    
+    
 
     
+
     
       
     
@@ -50,16 +61,15 @@
       
     
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
-    
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
     
-    
   </head>
+  
+  
   
   
     
@@ -69,12 +79,14 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo" data-mx-topbar="glass">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="toc" type="checkbox" id="__toc" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
+    <label class="md-overlay" for="__toc"></label>
     <div data-md-component="skip">
       
         
@@ -94,10 +106,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="MkDocs Output as Input Plugin" class="md-header__button md-logo" aria-label="MkDocs Output as Input Plugin" data-md-component="logo">
+    <a href=".." title="vexy-mkdocs-output-as-input" class="md-header__button md-logo" aria-label="vexy-mkdocs-output-as-input" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../assets/icon.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -108,7 +119,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            MkDocs Output as Input Plugin
+            vexy-mkdocs-output-as-input
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -156,7 +167,7 @@
       
         <label class="md-header__button md-icon" for="__search">
           
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.25 2a8.25 8.25 0 0 1 6.34 13.53l5.69 5.69a.749.749 0 0 1-.326 1.275.75.75 0 0 1-.734-.215l-5.69-5.69A8.25 8.25 0 1 1 10.25 2M3.5 10.25a6.75 6.75 0 1 0 13.5 0 6.75 6.75 0 0 0-13.5 0"/></svg>
         </label>
         <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
@@ -165,7 +176,7 @@
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.25 2a8.25 8.25 0 0 1 6.34 13.53l5.69 5.69a.749.749 0 0 1-.326 1.275.75.75 0 0 1-.734-.215l-5.69-5.69A8.25 8.25 0 1 1 10.25 2M3.5 10.25a6.75 6.75 0 1 0 13.5 0 6.75 6.75 0 0 0-13.5 0"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
@@ -177,11 +188,9 @@
         </button>
       </nav>
       
-        <div class="md-search__suggest" data-md-component="search-suggest"></div>
-      
     </form>
     <div class="md-search__output">
-      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+      <div class="md-search__scrollwrap" tabindex="0">
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
             Initializing search
@@ -199,10 +208,10 @@
         <a href="https://github.com/vexyart/vexy-mkdocs-output-as-input" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
-    vexy-mkdocs-output-as-input
+    vexyart/vexy-mkdocs-output-as-input
   </div>
 </a>
       </div>
@@ -232,28 +241,27 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="MkDocs Output as Input Plugin" class="md-nav__button md-logo" aria-label="MkDocs Output as Input Plugin" data-md-component="logo">
+    <a href=".." title="vexy-mkdocs-output-as-input" class="md-nav__button md-logo" aria-label="vexy-mkdocs-output-as-input" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../assets/icon.png" alt="logo">
 
     </a>
-    MkDocs Output as Input Plugin
+    vexy-mkdocs-output-as-input
   </label>
   
     <div class="md-nav__source">
       <a href="https://github.com/vexyart/vexy-mkdocs-output-as-input" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
-    vexy-mkdocs-output-as-input
+    vexyart/vexy-mkdocs-output-as-input
   </div>
 </a>
     </div>
   
-  <ul class="md-nav__list" data-md-scrollfix>
+  <ul class="md-nav__list">
     
       
       
@@ -267,9 +275,14 @@
   
   
   <span class="md-ellipsis">
+    
+  
     Home
+  
+
     
   </span>
+  
   
 
       </a>
@@ -284,14 +297,46 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
+      <a href="../installation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Getting Started
+    
+  
+    Installation
+  
+
     
   </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
   
 
       </a>
@@ -320,9 +365,14 @@
   
   
   <span class="md-ellipsis">
+    
+  
     Configuration
+  
+
     
   </span>
+  
   
 
           <span class="md-nav__icon md-icon"></span>
@@ -333,9 +383,14 @@
   
   
   <span class="md-ellipsis">
+    
+  
     Configuration
+  
+
     
   </span>
+  
   
 
       </a>
@@ -353,132 +408,102 @@
       <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+    <ul class="md-nav__list" data-md-component="toc">
       
         <li class="md-nav__item">
-  <a href="#configuration-options" class="md-nav__link">
+  <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
-      Configuration Options
+      
+        Options
+      
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Configuration Options">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
+</li>
+      
+        <li class="md-nav__item">
   <a href="#stage_dir" class="md-nav__link">
     <span class="md-ellipsis">
-      stage_dir
+      
+        stage_dir
+      
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#html_element" class="md-nav__link">
     <span class="md-ellipsis">
-      html_element
+      
+        html_element
+      
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#target_tag" class="md-nav__link">
     <span class="md-ellipsis">
-      target_tag
+      
+        target_tag
+      
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
+  <a href="#include_frontmatter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        include_frontmatter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preserve_links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        preserve_links
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#minify-and-prettify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        minify and prettify
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#verbose" class="md-nav__link">
     <span class="md-ellipsis">
-      verbose
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
       
-        <li class="md-nav__item">
-  <a href="#complete-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      Complete Example
+        verbose
+      
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuration-patterns" class="md-nav__link">
+  <a href="#configuration-example-for-a-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
-      Configuration Patterns
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Configuration Patterns">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#for-static-site-generators" class="md-nav__link">
-    <span class="md-ellipsis">
-      For Static Site Generators
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-different-themes" class="md-nav__link">
-    <span class="md-ellipsis">
-      For Different Themes
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-printpdf-generation" class="md-nav__link">
-    <span class="md-ellipsis">
-      For Print/PDF Generation
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
       
-        <li class="md-nav__item">
-  <a href="#environment-variables" class="md-nav__link">
-    <span class="md-ellipsis">
-      Environment Variables
-    </span>
-  </a>
-  
-</li>
+        Configuration example for a pipeline
       
-        <li class="md-nav__item">
-  <a href="#validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Validation
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#default-behavior" class="md-nav__link">
-    <span class="md-ellipsis">
-      Default Behavior
     </span>
   </a>
   
@@ -499,14 +524,19 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/" class="md-nav__link">
+      <a href="../cli/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Examples
+    
+  
+    Command-line tool
+  
+
     
   </span>
+  
   
 
       </a>
@@ -521,14 +551,100 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/" class="md-nav__link">
+      <a href="../how-it-works/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    API Reference
+    
+  
+    How it works
+  
+
     
   </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
   
 
       </a>
@@ -560,132 +676,102 @@
       <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+    <ul class="md-nav__list" data-md-component="toc">
       
         <li class="md-nav__item">
-  <a href="#configuration-options" class="md-nav__link">
+  <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
-      Configuration Options
+      
+        Options
+      
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Configuration Options">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
+</li>
+      
+        <li class="md-nav__item">
   <a href="#stage_dir" class="md-nav__link">
     <span class="md-ellipsis">
-      stage_dir
+      
+        stage_dir
+      
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#html_element" class="md-nav__link">
     <span class="md-ellipsis">
-      html_element
+      
+        html_element
+      
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#target_tag" class="md-nav__link">
     <span class="md-ellipsis">
-      target_tag
+      
+        target_tag
+      
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
+  <a href="#include_frontmatter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        include_frontmatter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preserve_links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        preserve_links
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#minify-and-prettify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        minify and prettify
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#verbose" class="md-nav__link">
     <span class="md-ellipsis">
-      verbose
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
       
-        <li class="md-nav__item">
-  <a href="#complete-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      Complete Example
+        verbose
+      
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuration-patterns" class="md-nav__link">
+  <a href="#configuration-example-for-a-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
-      Configuration Patterns
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Configuration Patterns">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#for-static-site-generators" class="md-nav__link">
-    <span class="md-ellipsis">
-      For Static Site Generators
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-different-themes" class="md-nav__link">
-    <span class="md-ellipsis">
-      For Different Themes
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-printpdf-generation" class="md-nav__link">
-    <span class="md-ellipsis">
-      For Print/PDF Generation
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
       
-        <li class="md-nav__item">
-  <a href="#environment-variables" class="md-nav__link">
-    <span class="md-ellipsis">
-      Environment Variables
-    </span>
-  </a>
-  
-</li>
+        Configuration example for a pipeline
       
-        <li class="md-nav__item">
-  <a href="#validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Validation
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#default-behavior" class="md-nav__link">
-    <span class="md-ellipsis">
-      Default Behavior
     </span>
   </a>
   
@@ -701,177 +787,165 @@
           
           
             <div class="md-content" data-md-component="content">
+              
               <article class="md-content__inner md-typeset">
                 
                   
-
-
   
   
 
 
 <h1 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h1>
-<p>The MkDocs Output as Input plugin provides several configuration options to customize its behavior. All options are set in your <code>mkdocs.yml</code> file.</p>
-<h2 id="configuration-options">Configuration Options<a class="headerlink" href="#configuration-options" title="Permanent link">&para;</a></h2>
-<h3 id="stage_dir"><code>stage_dir</code><a class="headerlink" href="#stage_dir" title="Permanent link">&para;</a></h3>
-<p><strong>Type</strong>: <code>str</code><br />
-<strong>Default</strong>: <code>"stage"</code></p>
-<p>The directory where cousin files will be created. Can be relative to the MkDocs project root or an absolute path.</p>
+<p>Configure the plugin under <code>plugins</code> in <code>mkdocs.yml</code>. All options are optional.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">plugins</span><span class="p">:</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">      </span><span class="nt">stage_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;output/markdown&quot;</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">      </span><span class="nt">stage_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">stage</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">main</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="nt">target_tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">article</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="nt">include_frontmatter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="nt">preserve_links</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="nt">minify</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">      </span><span class="nt">prettify</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">      </span><span class="nt">verbose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 </code></pre></div>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>Use an absolute path to place files outside your project:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">stage_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/var/www/content&quot;</span>
-</code></pre></div></p>
-</div>
-<h3 id="html_element"><code>html_element</code><a class="headerlink" href="#html_element" title="Permanent link">&para;</a></h3>
-<p><strong>Type</strong>: <code>str</code><br />
-<strong>Default</strong>: <code>"main"</code></p>
-<p>The HTML element or CSS selector to extract from rendered pages. </p>
-<p>Common values:
-- <code>"main"</code> - Main content area (default)
-- <code>"article"</code> - Article content
-- <code>"#content"</code> - Element with id="content"
-- <code>".documentation"</code> - Elements with class="documentation"
-- <code>"div.content"</code> - Div elements with class="content"</p>
+<p>The block above lists every option with its default value.</p>
+<h2 id="options">Options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stage_dir</code></td>
+<td>string</td>
+<td><code>stage</code></td>
+<td>Directory for cousin files, relative to the parent of <code>docs_dir</code></td>
+</tr>
+<tr>
+<td><code>html_element</code></td>
+<td>string or list of strings</td>
+<td><code>main</code></td>
+<td>CSS selector or selectors for the content to extract</td>
+</tr>
+<tr>
+<td><code>target_tag</code></td>
+<td>string</td>
+<td><code>article</code></td>
+<td>Tag name for the extracted element in the output</td>
+</tr>
+<tr>
+<td><code>include_frontmatter</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Write the source page's YAML front matter at the top of the cousin file</td>
+</tr>
+<tr>
+<td><code>preserve_links</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Prefix root-relative <code>href</code> and <code>src</code> values with <code>.</code></td>
+</tr>
+<tr>
+<td><code>minify</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Remove line breaks and whitespace between tags</td>
+</tr>
+<tr>
+<td><code>prettify</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Indent the HTML with BeautifulSoup's <code>prettify()</code></td>
+</tr>
+<tr>
+<td><code>verbose</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Log extra details about each page</td>
+</tr>
+</tbody>
+</table>
+<p>MkDocs checks the type of each option when it loads the configuration and stops if a value has the wrong type.</p>
+<h2 id="stage_dir"><code>stage_dir</code><a class="headerlink" href="#stage_dir" title="Permanent link">&para;</a></h2>
+<p>The plugin creates the stage directory at <code>&lt;parent of docs_dir&gt;/&lt;stage_dir&gt;</code>. With the usual layout, where <code>mkdocs.yml</code> and <code>docs/</code> sit side by side, the stage directory is a sibling of <code>docs/</code> and <code>site/</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">plugins</span><span class="p">:</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">      </span><span class="nt">stage_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">processed</span>
+</code></pre></div>
+<p>The plugin creates only the last directory in the path. A nested value such as <code>build/markdown</code> works only if <code>build/</code> already exists; otherwise the build stops with <code>FileNotFoundError</code>. See <a href="../troubleshooting/#filenotfounderror-for-the-stage-directory">Troubleshooting</a>.</p>
+<p>The plugin does not empty the stage directory before writing. Files from earlier builds stay there until you delete them.</p>
+<h2 id="html_element"><code>html_element</code><a class="headerlink" href="#html_element" title="Permanent link">&para;</a></h2>
+<p>A CSS selector, or a list of CSS selectors, that picks the content to extract from each rendered page. Selectors are evaluated with BeautifulSoup's <code>select()</code>. If a selector matches nothing, the plugin tries it once more as a plain tag name with <code>find()</code>.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">plugins</span><span class="p">:</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;article&quot;</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">article.md-content__inner</span>
 </code></pre></div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>If the specified element is not found, the plugin will log a warning and skip that page.</p>
-</div>
-<h3 id="target_tag"><code>target_tag</code><a class="headerlink" href="#target_tag" title="Permanent link">&para;</a></h3>
-<p><strong>Type</strong>: <code>str</code><br />
-<strong>Default</strong>: <code>"article"</code></p>
-<p>The HTML tag used to wrap the extracted content in cousin files.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">plugins</span><span class="p">:</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">      </span><span class="nt">target_tag</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;section&quot;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">h1</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">div.md-content</span>
 </code></pre></div>
-<p>This would produce:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>---
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="gu">title: Page Title</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="gu">---</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>&lt;section&gt;
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>&lt;!-- extracted content --&gt;
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>&lt;/section&gt;
-</code></pre></div></p>
-<h3 id="verbose"><code>verbose</code><a class="headerlink" href="#verbose" title="Permanent link">&para;</a></h3>
-<p><strong>Type</strong>: <code>bool</code><br />
-<strong>Default</strong>: <code>false</code></p>
-<p>Enable detailed debug logging to help troubleshoot issues.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">plugins</span><span class="p">:</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">      </span><span class="nt">verbose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</code></pre></div>
-<p>When enabled, the plugin logs:
-- Each file being processed
-- Extraction results
-- Any errors or warnings
-- File creation details</p>
-<h2 id="complete-example">Complete Example<a class="headerlink" href="#complete-example" title="Permanent link">&para;</a></h2>
-<p>Here's a complete configuration example showing all options:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">site_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">My Documentation</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nt">site_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.com/docs/</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="nt">theme</span><span class="p">:</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">material</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="nt">plugins</span><span class="p">:</span>
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">search</span>
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">      </span><span class="nt">stage_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;staged-content&quot;</span>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;article.md-content&quot;</span>
-<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">      </span><span class="nt">target_tag</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;div&quot;</span>
-<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">      </span><span class="nt">verbose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>
-<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="nt">nav</span><span class="p">:</span>
-<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Home</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">index.md</span>
-<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Guide</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">guide.md</span>
-<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">API</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api.md</span>
-</code></pre></div>
-<h2 id="configuration-patterns">Configuration Patterns<a class="headerlink" href="#configuration-patterns" title="Permanent link">&para;</a></h2>
-<h3 id="for-static-site-generators">For Static Site Generators<a class="headerlink" href="#for-static-site-generators" title="Permanent link">&para;</a></h3>
-<p>When using with Hugo:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">plugins</span><span class="p">:</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">      </span><span class="nt">stage_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;../hugo/content/docs&quot;</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;main&quot;</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">      </span><span class="nt">target_tag</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;div&quot;</span><span class="w">  </span><span class="c1"># Hugo prefers div</span>
-</code></pre></div></p>
-<p>When using with Jekyll:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">plugins</span><span class="p">:</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">      </span><span class="nt">stage_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;../jekyll/_posts&quot;</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;article&quot;</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">      </span><span class="nt">target_tag</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;article&quot;</span>
-</code></pre></div></p>
-<h3 id="for-different-themes">For Different Themes<a class="headerlink" href="#for-different-themes" title="Permanent link">&para;</a></h3>
-<p>Material for MkDocs:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">plugins</span><span class="p">:</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;article.md-content__inner&quot;</span>
-</code></pre></div></p>
-<p>ReadTheDocs theme:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">plugins</span><span class="p">:</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;div.rst-content&quot;</span>
-</code></pre></div></p>
-<p>Default MkDocs theme:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">plugins</span><span class="p">:</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;div.col-md-9&quot;</span>
-</code></pre></div></p>
-<h3 id="for-printpdf-generation">For Print/PDF Generation<a class="headerlink" href="#for-printpdf-generation" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nt">plugins</span><span class="p">:</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">      </span><span class="nt">stage_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;print-output&quot;</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;main&quot;</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">      </span><span class="nt">target_tag</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;div&quot;</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">      </span><span class="c1"># Then use pandoc or similar to convert</span>
-</code></pre></div>
-<h2 id="environment-variables">Environment Variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h2>
-<p>You can use environment variables in configuration:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nt">plugins</span><span class="p">:</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">      </span><span class="nt">stage_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${OUTPUT_DIR:-stage}&quot;</span>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">      </span><span class="nt">verbose</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${DEBUG:-false}&quot;</span>
-</code></pre></div>
-<h2 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h2>
-<p>The plugin validates configuration on startup:</p>
+<p>What ends up in the output depends on how many elements match in total:</p>
 <ul>
-<li><code>stage_dir</code> must be a valid path</li>
-<li><code>html_element</code> must be a non-empty string</li>
-<li><code>target_tag</code> must be a valid HTML tag name</li>
-<li><code>verbose</code> must be a boolean</li>
+<li><strong>One element.</strong> It is written as-is. If <code>html_element</code> is a single string, the element's tag is renamed to <code>target_tag</code> unless <code>html_element</code> already equals <code>target_tag</code>. The element's attributes are kept. If <code>html_element</code> is a list, the element keeps its original tag.</li>
+<li><strong>Several elements.</strong> This happens when a list has more than one matching selector, or when one selector matches several elements. The plugin creates a new, attribute-free <code>target_tag</code> element and moves all matches into it, in selector order.</li>
+<li><strong>No elements.</strong> The plugin logs <code>No matching elements found</code> and writes no cousin file for that page.</li>
 </ul>
-<p>Invalid configuration will raise an error during MkDocs build.</p>
-<h2 id="default-behavior">Default Behavior<a class="headerlink" href="#default-behavior" title="Permanent link">&para;</a></h2>
-<p>With no configuration, the plugin uses these defaults:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nt">plugins</span><span class="p">:</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">output-as-input</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span><span class="c1"># Equivalent to:</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="c1"># - output-as-input:</span>
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">  </span><span class="c1">#     stage_dir: &quot;stage&quot;</span>
-<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">  </span><span class="c1">#     html_element: &quot;main&quot;</span>
-<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">  </span><span class="c1">#     target_tag: &quot;article&quot;</span>
-<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">  </span><span class="c1">#     verbose: false</span>
+<p>Because the rename rule compares the option value with <code>target_tag</code>, a single string selector such as <code>.content</code> or <code>div[role=main]</code> is also renamed. <code>html_element: article</code> with the default <code>target_tag: article</code> keeps the tag unchanged.</p>
+<h2 id="target_tag"><code>target_tag</code><a class="headerlink" href="#target_tag" title="Permanent link">&para;</a></h2>
+<p>The tag name used for the renamed element or for the wrapper around several elements.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">plugins</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">main</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="nt">target_tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">section</span>
 </code></pre></div>
+<p>With this configuration, <code>&lt;main class="md-main"&gt;…&lt;/main&gt;</code> becomes <code>&lt;section class="md-main"&gt;…&lt;/section&gt;</code>.</p>
+<h2 id="include_frontmatter"><code>include_frontmatter</code><a class="headerlink" href="#include_frontmatter" title="Permanent link">&para;</a></h2>
+<p>When <code>true</code>, the cousin file starts with the source page's front matter, followed by a blank line. When <code>false</code>, the cousin file contains only the HTML.</p>
+<p>The plugin recognises front matter only when the source file starts with a line that is exactly <code>---</code> and the block ends with another line that is exactly <code>---</code>. It parses the block with <code>yaml.safe_load</code> and writes it back with <code>yaml.safe_dump</code>. As a result:</p>
+<ul>
+<li>Keys are written in alphabetical order.</li>
+<li>Lists and mappings are written in block style.</li>
+<li>Comments and the original formatting are not kept.</li>
+</ul>
+<p>If the block is not valid YAML, the plugin logs <code>Failed to parse frontmatter</code> and treats the page as having no front matter. A page with no front matter, or with an empty block, gets no front matter in its cousin file.</p>
+<h2 id="preserve_links"><code>preserve_links</code><a class="headerlink" href="#preserve_links" title="Permanent link">&para;</a></h2>
+<p>When <code>true</code>, the plugin looks at every <code>&lt;a&gt;</code>, <code>&lt;img&gt;</code>, <code>&lt;link&gt;</code> and <code>&lt;script&gt;</code> element inside the extracted content. Any <code>href</code> or <code>src</code> value that starts with <code>/</code> but not with <code>//</code> gets a <code>.</code> prefix, so <code>/guide/</code> becomes <code>./guide/</code>. Protocol-relative URLs (<code>//example.com/…</code>), absolute URLs and relative URLs are not changed.</p>
+<p>MkDocs normally writes relative links, so this option only changes links that are root-relative in the rendered HTML, for example links written as <code>/path</code> in raw HTML inside your Markdown.</p>
+<h2 id="minify-and-prettify"><code>minify</code> and <code>prettify</code><a class="headerlink" href="#minify-and-prettify" title="Permanent link">&para;</a></h2>
+<p>These options change the formatting of the HTML part of the cousin file:</p>
+<ul>
+<li><code>minify: true</code> removes all line breaks, collapses each run of whitespace to one space and removes whitespace between a <code>&gt;</code> and the next <code>&lt;</code>.</li>
+<li><code>prettify: true</code> passes the element through BeautifulSoup's <code>prettify()</code>, which puts each tag and text node on its own indented line.</li>
+<li>With both <code>false</code>, the HTML is written as BeautifulSoup serialises it, which is close to what the theme produced.</li>
+</ul>
+<p>You cannot enable both. If you do, the plugin raises <code>ValueError: Cannot use both 'minify' and 'prettify' options</code> when the build starts, in the <code>on_config</code> step, and the build stops.</p>
+<h2 id="verbose"><code>verbose</code><a class="headerlink" href="#verbose" title="Permanent link">&para;</a></h2>
+<p>When <code>true</code>, the plugin logs <code>Plugin initialized</code> with the site and docs directories, the resolved configuration, one <code>Captured source file</code> message per page with its front matter keys, and one <code>Created cousin file</code> message per written file.</p>
+<p>The plugin logs through <code>loguru</code>, which writes to standard error in its own format, separate from MkDocs' own log lines.</p>
+<h2 id="configuration-example-for-a-pipeline">Configuration example for a pipeline<a class="headerlink" href="#configuration-example-for-a-pipeline" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">plugins</span><span class="p">:</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">search</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">output-as-input</span><span class="p">:</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="nt">stage_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">content</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">      </span><span class="nt">html_element</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">article.md-content__inner</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">      </span><span class="nt">target_tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">div</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">      </span><span class="nt">include_frontmatter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">      </span><span class="nt">prettify</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<p>This writes one Markdown file per page into <code>content/</code>, each with the original front matter and an indented <code>&lt;div&gt;</code> holding the Material theme's article body.</p>
 
 
 
 
 
 
-
-  
-  
 
 
 
@@ -885,16 +959,72 @@
           
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
-        
-          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  Back to top
-</button>
-        
+          <div class="md-top" data-md-component="top" hidden>
+  <div class="md-top__center">
+    <button type="button" class="md-top__button md-top__button--main" data-md-action="top">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+      <span>Back to top</span>
+    </button>
+    
+      
+      
+      <label class="md-top__button md-top__side md-top__side--nav" for="__drawer" >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
+      </label>
+    
+    
+      
+      
+      <label class="md-top__button md-top__side md-top__side--toc" for="__toc" >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-panel-right" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/></svg>
+      </label>
+    
+  </div>
+</div>
       </main>
       
         <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../quickstart/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Quickstart">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Quickstart
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../cli/" class="md-footer__link md-footer__link--next" aria-label="Next: Command-line tool">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Command-line tool
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -902,8 +1032,8 @@
   
   
     Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
+    <a href="https://jaywhj.github.io/mkdocs-materialx/" target="_blank" rel="noopener">
+      MaterialX
     </a>
   
 </div>
@@ -920,10 +1050,11 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "code": null, "features": ["navigation.sections", "navigation.top", "navigation.footer", "toc.follow", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "code.collapse": "Collapse", "code.download": "Download", "code.expand": "Expand remaining # lines", "code.select": "Toggle line selection", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      <script src="../assets/javascripts/bundle.fc193f93.min.js"></script>
       
     
   </body>

@@ -49,4 +49,4 @@ release-major:
 
 docs:
 	@echo "Building and serving documentation..."
-	mkdocs serve
+	src_docs/build.sh serve

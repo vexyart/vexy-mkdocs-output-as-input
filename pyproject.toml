@@ -54,13 +54,13 @@ dev = [
     "pyinstaller>=6.0.0",
 ]
 docs = [
-    "vexy-mkdocs-material>=9.4.0",
+    "mkdocs-material>=9.4.0",
     "mkdocstrings[python]>=0.24.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/vexyart/vexy-mkdocs-output-as-input"
-Documentation = "https://github.com/vexyart/vexy-mkdocs-output-as-input"
+Documentation = "https://vexy.dev/vexy-mkdocs-output-as-input/"
 Repository = "https://github.com/vexyart/vexy-mkdocs-output-as-input"
 Issues = "https://github.com/vexyart/vexy-mkdocs-output-as-input/issues"
 Changelog = "https://github.com/vexyart/vexy-mkdocs-output-as-input/blob/main/CHANGELOG.md"
@@ -86,6 +86,7 @@ include = [
     "/tests",
     "/README.md",
     "/CHANGELOG.md",
+    "/LICENSE",
 ]
 
 [tool.ruff]

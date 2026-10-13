@@ -73,3 +73,11 @@ site/
 
 # hatch-vcs generated version file
 src/mkdocs_output_as_input/_version.py
+
+# Tooling and build outputs
+.omc/
+node_modules/
+target/
+# Default output of the output-as-input plugin when run in this repo
+stage/
+src_docs/stage/

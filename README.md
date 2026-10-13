@@ -6,6 +6,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python versions](https://img.shields.io/pypi/pyversions/vexy-mkdocs-output-as-input.svg)](https://pypi.org/project/vexy-mkdocs-output-as-input/)
 
+**Documentation:** https://vexy.dev/vexy-mkdocs-output-as-input/
+
 A MkDocs plugin that captures HTML output and creates "cousin" Markdown files with original frontmatter and extracted HTML content.
 
 ## Features

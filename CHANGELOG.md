@@ -83,3 +83,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased]: https://github.com/vexyart/vexy-mkdocs-output-as-input/compare/v0.2.0...HEAD
 [0.2.0]: https://github.com/vexyart/vexy-mkdocs-output-as-input/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/vexyart/vexy-mkdocs-output-as-input/releases/tag/v0.1.0
+
+
+## 2026-10-04 — Issue 102 documentation build repair
+
+Removed the missing theme override directory and supplied loguru in documentation launchers; documentation build and generated index verification passed.
+
+Evidence: `/Users/adam/Developer/vcs3/.mkdocs-build-audit/issue-102/README.md`.
