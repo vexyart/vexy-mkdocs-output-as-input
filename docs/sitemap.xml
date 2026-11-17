@@ -2,47 +2,57 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://vexy.dev/vexy-mkdocs-output-as-input/</loc>
-        <lastmod>2026-10-13</lastmod>
+        <lastmod>2026-11-17</lastmod>
         <changefreq>daily</changefreq>
     </url>
     <url>
         <loc>https://vexy.dev/vexy-mkdocs-output-as-input/cli/</loc>
-        <lastmod>2026-10-13</lastmod>
+        <lastmod>2026-11-17</lastmod>
         <changefreq>daily</changefreq>
     </url>
     <url>
         <loc>https://vexy.dev/vexy-mkdocs-output-as-input/configuration/</loc>
-        <lastmod>2026-10-13</lastmod>
+        <lastmod>2026-11-17</lastmod>
         <changefreq>daily</changefreq>
     </url>
     <url>
         <loc>https://vexy.dev/vexy-mkdocs-output-as-input/contributing/</loc>
-        <lastmod>2026-10-13</lastmod>
+        <lastmod>2026-11-17</lastmod>
         <changefreq>daily</changefreq>
     </url>
     <url>
         <loc>https://vexy.dev/vexy-mkdocs-output-as-input/examples/</loc>
-        <lastmod>2026-10-13</lastmod>
+        <lastmod>2026-11-17</lastmod>
         <changefreq>daily</changefreq>
     </url>
     <url>
         <loc>https://vexy.dev/vexy-mkdocs-output-as-input/how-it-works/</loc>
-        <lastmod>2026-10-13</lastmod>
+        <lastmod>2026-11-17</lastmod>
         <changefreq>daily</changefreq>
     </url>
     <url>
         <loc>https://vexy.dev/vexy-mkdocs-output-as-input/installation/</loc>
-        <lastmod>2026-10-13</lastmod>
+        <lastmod>2026-11-17</lastmod>
         <changefreq>daily</changefreq>
     </url>
     <url>
         <loc>https://vexy.dev/vexy-mkdocs-output-as-input/quickstart/</loc>
-        <lastmod>2026-10-13</lastmod>
+        <lastmod>2026-11-17</lastmod>
+        <changefreq>daily</changefreq>
+    </url>
+    <url>
+        <loc>https://vexy.dev/vexy-mkdocs-output-as-input/source-api/</loc>
+        <lastmod>2026-11-17</lastmod>
+        <changefreq>daily</changefreq>
+    </url>
+    <url>
+        <loc>https://vexy.dev/vexy-mkdocs-output-as-input/topics/</loc>
+        <lastmod>2026-11-17</lastmod>
         <changefreq>daily</changefreq>
     </url>
     <url>
         <loc>https://vexy.dev/vexy-mkdocs-output-as-input/troubleshooting/</loc>
-        <lastmod>2026-10-13</lastmod>
+        <lastmod>2026-11-17</lastmod>
         <changefreq>daily</changefreq>
     </url>
 </urlset>

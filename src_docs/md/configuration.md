@@ -1,3 +1,8 @@
+---
+this_file: src_docs/md/configuration.md
+tags: [Configuration]
+---
+
 # Configuration
 
 Configure the plugin under `plugins` in `mkdocs.yml`. All options are optional.

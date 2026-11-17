@@ -1,3 +1,8 @@
+---
+this_file: src_docs/md/cli.md
+tags: [Command line]
+---
+
 # Command-line tool
 
 The `mkdocs-output-as-input` command applies the plugin's extraction to one HTML file, without running MkDocs. Use it to test a selector against a page you already built, or to convert single files in a script.

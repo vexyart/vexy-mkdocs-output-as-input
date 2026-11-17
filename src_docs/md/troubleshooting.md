@@ -1,3 +1,8 @@
+---
+this_file: src_docs/md/troubleshooting.md
+tags: [Troubleshooting]
+---
+
 # Troubleshooting
 
 The plugin logs through `loguru` to standard error. Turn on `verbose: true` for one message per captured page and per written file. The messages quoted below are the exact texts the plugin logs.

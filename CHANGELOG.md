@@ -90,3 +90,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Removed the missing theme override directory and supplied loguru in documentation launchers; documentation build and generated index verification passed.
 
 Evidence: `/Users/adam/Developer/vcs3/.mkdocs-build-audit/issue-102/README.md`.
+
+## 2026-10-18: documentation plugins
+
+- Use MaterialX search, inherited metadata and a topic index; keep ordered navigation in awesome-nav.
+- The documentation wrapper installs the plugins required by this site.
+- Strict documentation build and rendered output checks passed.
